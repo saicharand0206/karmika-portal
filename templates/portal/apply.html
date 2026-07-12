@@ -1,0 +1,32 @@
+{% extends "portal/base.html" %}
+{% block title %}Apply for a scheme{% endblock %}
+{% block content %}
+<h1>Apply for a benefit</h1>
+<p class="sub">You need the worker's registration number (e.g. KP/2026/00001 or ALOTEST/2019/00008). Not registered yet? <a href="/register/">Register first</a>.</p>
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+<div class="card" style="max-width:680px">
+  <form method="post">{% csrf_token %}
+    <label>Worker registration number *</label>
+    <input type="text" name="reg_no" required placeholder="KP/2026/00001">
+    <label>Benefit category *</label>
+    <select name="subscheme" required>
+      {% for ss in subschemes %}
+      <option value="{{ ss.id }}" {% if request.GET.sub == ss.id|stringformat:"s" %}selected{% endif %}>{{ ss.scheme.description }} — {{ ss.description }}</option>
+      {% endfor %}
+    </select>
+    <div class="grid c2">
+      <div><label>Applicant name (if not the worker)</label>
+        <input type="text" name="applicant_name" placeholder="Leave blank if worker is applying"></div>
+      <div><label>Relationship with worker</label>
+        <input type="text" name="relationship" placeholder="Self / Wife / Son…"></div>
+    </div>
+    <div class="grid c2">
+      <div><label>Phone</label><input type="tel" name="phone" maxlength="15"></div>
+      <div><label>Bank account number</label><input type="text" name="bank_account" maxlength="30"></div>
+    </div>
+    <label>Details (date/place of incident, hospital, etc.)</label>
+    <textarea name="details" rows="4"></textarea>
+    <div style="margin-top:18px"><button class="btn" type="submit">Submit application</button></div>
+  </form>
+</div>
+{% endblock %}

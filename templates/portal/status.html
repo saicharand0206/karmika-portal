@@ -1,0 +1,23 @@
+{% extends "portal/base.html" %}
+{% block title %}Track application{% endblock %}
+{% block content %}
+<h1>Track application status</h1>
+<p class="sub">Enter the application number you received on submission (e.g. KPA-2026-00001).</p>
+<form method="get" style="display:flex;gap:10px;margin-bottom:16px;max-width:520px">
+  <input type="text" name="app_no" value="{{ app_no }}" placeholder="KPA-2026-00001">
+  <button class="btn" type="submit">Check status</button>
+</form>
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+{% if a %}
+<div class="card" style="max-width:640px">
+  <h3 style="margin-top:0">{{ a.app_no }} <span class="badge {{ a.status }}">{{ a.get_status_display }}</span></h3>
+  <table>
+    <tr><th>Worker</th><td><a href="/worker/{{ a.worker.reg_no }}/">{{ a.worker.worker_name }} ({{ a.worker.reg_no }})</a></td></tr>
+    <tr><th>Benefit</th><td>{{ a.subscheme.scheme.description }} — {{ a.subscheme.description }}</td></tr>
+    <tr><th>Applicant</th><td>{{ a.applicant_name }} {% if a.relationship %}({{ a.relationship }}){% endif %}</td></tr>
+    <tr><th>Submitted</th><td>{{ a.submitted_at|date:"d M Y, H:i" }}</td></tr>
+    <tr><th>Remarks</th><td>{{ a.remarks|default:"—" }}</td></tr>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

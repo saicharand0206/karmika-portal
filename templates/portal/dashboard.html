@@ -1,0 +1,58 @@
+{% extends "portal/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Analytics dashboard</h1>
+<p class="sub">Live charts from the portal database — worker registrations and scheme applications.</p>
+
+<div class="grid c3" style="margin-bottom:18px">
+  <div class="stat"><b>{{ totals.workers }}</b><span>Workers</span></div>
+  <div class="stat"><b>{{ totals.applications }}</b><span>Applications</span></div>
+  <div class="stat"><b>{{ quality.missing_dob }}</b><span>Records missing DOB</span></div>
+</div>
+
+<div class="grid c2">
+  <div class="card"><h3 style="margin-top:0">Registrations by year</h3><canvas id="chYear"></canvas></div>
+  <div class="card"><h3 style="margin-top:0">Age distribution</h3><canvas id="chAge"></canvas></div>
+  <div class="card"><h3 style="margin-top:0">Gender split</h3><canvas id="chGender" style="max-height:260px"></canvas></div>
+  <div class="card"><h3 style="margin-top:0">Top trade codes</h3><canvas id="chTrade"></canvas></div>
+  <div class="card"><h3 style="margin-top:0">Application status</h3><canvas id="chStatus" style="max-height:260px"></canvas></div>
+  <div class="card"><h3 style="margin-top:0">Applications by scheme</h3><canvas id="chScheme"></canvas></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Data quality (from the cleaning pipeline)</h3>
+  <p style="color:var(--soft);font-size:14px;margin:0">
+    {{ quality.missing_dob }} records missing date of birth · {{ quality.invalid_ifsc }} IFSC codes with invalid format ·
+    {{ quality.test_rows }} rows flagged as junk/test entries. Dates in the source file were Excel serial numbers and
+    were converted during import; gender and scheme fields were decoded from numeric codes.
+  </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+const D = JSON.parse('{{ chart_data|escapejs }}');
+const navy = '#0E4C8C', amber = '#F5A623', palette = ['#0E4C8C','#F5A623','#2E8B57','#C0392B','#7D3C98','#2471A3','#B7950B','#148F77'];
+
+new Chart(chYear, {type:'bar', data:{labels:D.by_year.map(x=>x.reg_year),
+  datasets:[{label:'Registrations', data:D.by_year.map(x=>x.n), backgroundColor:navy}]},
+  options:{plugins:{legend:{display:false}}}});
+
+new Chart(chAge, {type:'bar', data:{labels:Object.keys(D.age_buckets),
+  datasets:[{label:'Workers', data:Object.values(D.age_buckets), backgroundColor:amber}]},
+  options:{plugins:{legend:{display:false}}}});
+
+new Chart(chGender, {type:'doughnut', data:{labels:D.by_gender.map(x=>x.gender),
+  datasets:[{data:D.by_gender.map(x=>x.n), backgroundColor:[navy, '#C0392B', '#8CA0B5']}]}});
+
+new Chart(chTrade, {type:'bar', data:{labels:D.by_trade.map(x=>'Trade '+x.trade_code),
+  datasets:[{label:'Workers', data:D.by_trade.map(x=>x.n), backgroundColor:'#2471A3'}]},
+  options:{indexAxis:'y', plugins:{legend:{display:false}}}});
+
+new Chart(chStatus, {type:'doughnut', data:{labels:D.app_status.map(x=>x.status),
+  datasets:[{data:D.app_status.map(x=>x.n), backgroundColor:['#2471A3','#B7950B','#2E8B57','#C0392B']}]}});
+
+new Chart(chScheme, {type:'bar', data:{labels:D.app_scheme.map(x=>x['subscheme__scheme__description']),
+  datasets:[{label:'Applications', data:D.app_scheme.map(x=>x.n), backgroundColor:palette}]},
+  options:{indexAxis:'y', plugins:{legend:{display:false}}}});
+</script>
+{% endblock %}

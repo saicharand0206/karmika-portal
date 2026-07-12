@@ -1,0 +1,17 @@
+{% extends "portal/base.html" %}
+{% block title %}Application submitted{% endblock %}
+{% block content %}
+<h1>✅ Application submitted</h1>
+<div class="success">Save this application number to track your claim.</div>
+<div class="card" style="max-width:560px">
+  <p style="font-size:13px;color:var(--soft);margin:0">Application number</p>
+  <p style="font-size:26px;font-weight:800;color:var(--navy);margin:4px 0 14px">{{ a.app_no }}</p>
+  <table>
+    <tr><th>Worker</th><td>{{ a.worker.worker_name }} ({{ a.worker.reg_no }})</td></tr>
+    <tr><th>Benefit</th><td>{{ a.subscheme.scheme.description }} — {{ a.subscheme.description }}</td></tr>
+    <tr><th>Applicant</th><td>{{ a.applicant_name }} {% if a.relationship %}({{ a.relationship }}){% endif %}</td></tr>
+    <tr><th>Status</th><td><span class="badge {{ a.status }}">{{ a.get_status_display }}</span></td></tr>
+  </table>
+  <div style="margin-top:16px"><a class="btn" href="/status/?app_no={{ a.app_no }}">Track this application</a></div>
+</div>
+{% endblock %}

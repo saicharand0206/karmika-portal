@@ -1,0 +1,41 @@
+{% extends "portal/base.html" %}
+{% block title %}Karmika Portal — Home{% endblock %}
+{% block content %}
+<h1>Welfare services for construction workers</h1>
+<p class="sub">Register workers, browse welfare schemes, submit benefit applications, and track their status — with Cherry, the AI assistant, to guide you at every step.</p>
+
+<div class="grid c4" style="margin-bottom:22px">
+  <div class="stat"><b>{{ stats.workers }}</b><span>Registered workers</span></div>
+  <div class="stat"><b>{{ stats.schemes }}</b><span>Welfare schemes</span></div>
+  <div class="stat"><b>{{ stats.applications }}</b><span>Applications filed</span></div>
+  <div class="stat"><b>{{ stats.approved }}</b><span>Approved benefits</span></div>
+</div>
+
+<div class="grid c3">
+  <div class="card">
+    <h3 style="margin-top:0">📝 New worker?</h3>
+    <p style="color:var(--soft);font-size:13.5px">Register in two minutes and get a registration number instantly.</p>
+    <a class="btn" href="/register/">Register now</a>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">🎁 Claim a benefit</h3>
+    <p style="color:var(--soft);font-size:13.5px">{{ stats.subschemes }} benefit categories across {{ stats.schemes }} schemes — accidental relief, maternity, marriage gift and more.</p>
+    <a class="btn" href="/apply/">Apply for a scheme</a>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">🔍 Track application</h3>
+    <p style="color:var(--soft);font-size:13.5px">Enter your application number to see its current status and remarks.</p>
+    <a class="btn" href="/status/">Track status</a>
+  </div>
+</div>
+
+<div class="card" style="margin-top:8px">
+  <h3 style="margin-top:0">🍒 Meet Cherry — the portal's AI assistant</h3>
+  <p style="color:var(--soft);font-size:14px;margin-bottom:0">
+    Click the red button at the bottom-right on any page. Cherry is connected to the portal's live database:
+    paste a registration number and it fetches the worker's record; paste an application number and it reports
+    the status; ask "what documents do I need for Total Permanent Disability?" and it lists them from the scheme
+    catalogue. It can also read out live portal statistics and point you to the right page.
+  </p>
+</div>
+{% endblock %}

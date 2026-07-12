@@ -1,0 +1,34 @@
+{% extends "portal/base.html" %}
+{% block title %}{{ w.worker_name }}{% endblock %}
+{% block content %}
+<h1>{{ w.worker_name }} {% if w.worker_name_telugu %}<span style="font-size:18px;color:var(--soft)">({{ w.worker_name_telugu }})</span>{% endif %}</h1>
+<p class="sub">Registration {{ w.reg_no }} · registered {{ w.reg_year }}</p>
+<div class="grid c2">
+  <div class="card">
+    <h3 style="margin-top:0">Worker details</h3>
+    <table>
+      <tr><th>Father's name</th><td>{{ w.father_name|default:"—" }}</td></tr>
+      <tr><th>Gender / Age</th><td>{{ w.gender }} / {{ w.age|default:"—" }}</td></tr>
+      <tr><th>Date of birth</th><td>{{ w.date_of_birth|default:"not on record" }}</td></tr>
+      <tr><th>Registration date</th><td>{{ w.reg_date|default:"—" }}</td></tr>
+      <tr><th>Trade code</th><td>{{ w.trade_code|default:"—" }}</td></tr>
+      <tr><th>District code</th><td>{{ w.district_code|default:"—" }}</td></tr>
+      <tr><th>IFSC</th><td>{{ w.ifsc_code|default:"—" }} {% if w.ifsc_code and not w.ifsc_valid %}<span class="badge REJECTED">invalid format</span>{% endif %}</td></tr>
+      <tr><th>Migrant worker</th><td>{{ w.migrant_worker|yesno:"Yes,No" }}</td></tr>
+      <tr><th>Trade union member</th><td>{{ w.trade_union_member|yesno:"Yes,No" }}</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Applications ({{ apps|length }})</h3>
+    {% for a in apps %}
+      <p style="margin:8px 0;border-bottom:1px solid var(--border);padding-bottom:8px">
+        <b>{{ a.app_no }}</b> — {{ a.subscheme.description }}<br>
+        <span class="badge {{ a.status }}">{{ a.get_status_display }}</span>
+        <span style="color:var(--faint);font-size:12px">{{ a.submitted_at|date:"d M Y" }}</span>
+      </p>
+    {% empty %}
+      <p style="color:var(--faint)">No applications yet. <a href="/apply/">Apply for a scheme →</a></p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

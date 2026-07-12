@@ -1,0 +1,43 @@
+reg_no,temp_id,alo_code,reg_year,reg_date,worker_name,father_name,gender,date_of_birth,age,caste_code,bank_code,ifsc_code,ifsc_valid,trade_union_member,migrant_worker,trade_code,district_code,worker_name_telugu,father_name_telugu,is_test_row,age_flag
+ALOTEST/2019/00008,934498,B999,2019,,Rajaram,Ramana,Male,68600999867-02-06,49,5,,,False,False,False,9,23,రజరమ్,రమన,False,False
+ALOTEST/2019/00009,926339,B999,2019,,Raman,Someswar,Male,,54,5,,,False,False,False,14,22,రమన్,,False,False
+ALOTEST/2018/00012,640608,B999,2018,,Kamesh,Karna,Male,,33,5,85.0,SIBL0000546,True,False,False,3,19,కమెశ్,కర్న,False,False
+ALOTEST/2018/00017,874611,B999,2018,,Mohana Rao,Raghuramayya,Male,,45,5,2.0,ANDB000099,False,False,False,9,22,మొహన రఒ,రఘురమయ్య,False,False
+ALOTEST/2018/00015,710048,B999,2018,,Basha,Karim,Male,,32,5,110.0,HDFC0CTGB20,True,False,False,3,19,బశ,కరిమ్,False,False
+ALOTEST/2017/00012,534184,B999,2017,,Narayana,Ramesh,Male,,38,5,13.0,PUNB0393500,True,False,False,5,27,,,False,False
+ALOTEST/2016/00001,361588,B999,2016,,Sdfsdf,Sdf,Male,,19,3,,,False,False,False,1,16,,,True,False
+ALOTEST/2015/00002,158682,B999,2015,,Yadlapalli Rajasekhar,Yadlapalli Venkateswararao,Male,,28,3,110.0,HDFC0CTGB02,True,False,False,13,22,యడ్లపల్లి రాజశేఖర్,యడ్లపల్లి వెంకటేశ్వరరావు,False,False
+ALOTEST/2019/00010,602436,B999,2019,,Divakar Divan,Samuel,Male,,38,5,9.0,BKDN0610984,True,False,False,9,22,డివకర్ డివన్,సముఎల్,False,False
+ALOTEST/2017/00004,533586,B999,2017,,Ramtest,Syamtest,Male,,40,5,,,False,False,False,6,15,రాంటెస్ట్,శ్యాంటెస్ట్,True,False
+ALOTEST/2017/00006,534934,B999,2017,,Abiram,Ramaraju,Male,,38,5,,,False,False,False,42,16,అభిరామ్,రామరాజు,False,False
+ALOTEST/2017/00013,544867,B999,2017,,Ramanadham,Raghu,Male,-3311770416-05-05,47,5,21.0,SYNB0003420,True,False,False,9,16,రఘు,రఘు,False,False
+ALOTEST/2017/00001,528717,B999,2017,,Ramanamma,Rajaiah,Female,66708558543-11-14,47,3,,ANDB,False,False,False,2,16,RAMANAMMA,రాజయ్య,False,False
+ALOTEST/2015/00001,144950,B999,2015,,Harish,Sureshfather,Male,,28,3,25.0,VIJB0004052,True,False,False,15,24,,,False,False
+ALOTEST/2018/00003,599254,B999,2018,,Rama Krishna,Sasidhara Rao,Male,22472742613-05-11,48,5,2.0,ANDB000099,False,False,False,15,23,రమ క్రిశ్న,ససిదర రఒ,False,False
+ALOTEST/2018/00006,629811,B999,2018,,Kiran,Raja,Male,,34,5,23.0,UTBI0ARN852,True,False,False,3,9,కిరన్,రజ,False,False
+ALOTEST/2018/00010,630415,B999,2018,,Kaasi,Naasi,Male,,23,5,20.0,SBTR0000743,True,False,False,8,19,కాసి,నాసి,False,False
+ALOTEST/2017/00009,538677,B999,2017,,Sagara Rao,Mukundha,Male,,38,5,25.0,VIJB0004096,True,False,False,9,18,సాగర రావు,ముకుంద,False,False
+ALOTEST/2017/00014,534178,B999,2017,,Bhadra,Ramchander,Male,,37,5,,,False,False,False,14,16,భద్ర,రాంచందర్,False,False
+ALOTEST/2017/00002,530294,B999,2017,,Rajesh,Ramarao,Male,,37,5,2.0,ANDB000099,False,False,False,15,16,RAJESH,రామారావు,False,False
+ALOTEST/2017/00003,530593,B999,2017,,Ramaraju,Krishnaiah,Male,,38,5,86.0,TMBL0000167,True,False,False,9,33,RAMARAJU,కృష్ణయ్య,False,False
+ALOTEST/2018/00008,634697,B999,2018,,Rakesh,Ramana,Male,,35,5,77.0,FDRL0001583,True,False,False,52,19,రకెశ్,రమన,False,False
+ALOTEST/2009/50001,36018,B999,2009,,Shiva,Ranga Raju,Male,,24,5,25.0,ANDB0000029,True,False,False,8,1,,,False,False
+ALOTEST/2017/00008,533233,B999,2017,,Shaik Sah,Santosh Prasad,Male,,29,5,,,False,False,False,13,15,షైక్ సహా,సంతోష్ ప్రసాద్,False,False
+ALOTEST/2017/00010,533231,B999,2017,,Santosh Sah,Shaik Prasad Sah,Male,,29,5,,,False,False,False,13,15,సంతోష్ సహా,షైక్ ప్రసాద్  సహా ,False,False
+ALOTEST/2019/00007,1018959,B999,2019,,Rajesh,Varma,Male,,55,5,,,False,False,False,15,13,రజెశ్,వర్మ,False,False
+ALOTEST/2017/00007,538678,B999,2017,,Ramana,Mahadeviah,Male,,38,5,18.0,SBMY0040293,True,False,False,4,18,రమణ,మహాదేవయ్య,False,False
+ALOTEST/2018/00019,745540,B999,2018,,Narayana,Madhana,Male,,23,5,,,False,False,False,47,31,నరయన,మదన,False,False
+ALOTEST/2019/00005,966903,B999,2019,,Sivaram,Ramana Rao,Male,,39,5,,,False,False,False,14,1,సివరమ్,రమన రఒ,False,False
+ALOTEST/2019/00006,977375,B999,2019,,Someswar,Ramaraju,Male,,39,5,2.0,ANDB000099,False,False,False,1,19,సొమెస్wఅర్,రమరజు,False,False
+ALOTEST/2018/00005,599646,B999,2018,,Ramehs Babu,Krishna Rao,Male,,30,5,2.0,ANDB0000009,True,False,False,14,22,రమెహ్స్ బబు,క్రిశ్న రఒ,False,False
+ALOTEST/2018/00016,745526,B999,2018,,Kanana,Haresh,Male,,26,5,,,False,True,False,42,10,కనన,హరెశ్,False,False
+ALOTEST/2017/00005,531424,B999,2017,,Sarath,Chandra Rao,Male,66708558543-11-14,47,5,,,False,False,False,4,15,శరత్,చంద్ర రావు,False,False
+ALOTEST/2015/00003,189646,B999,2015,,Segoju Madhava Chary,S Achary,Male,,35,3,,,False,False,False,13,16,సేగోజు మాధవ చరి, స ఆచరి,False,False
+ALOTEST/2018/00009,619622,B999,2018,,Mahaveer,Veer Laal,Male,,38,5,1.0,ALLA0212375,True,False,False,4,22,మహవీర్,వీర్ లాల్,False,False
+ALOTEST/2018/00013,661979,B999,2018,,Ramana,Raja Rao,Male,,38,5,22.0,UBIN0534625,True,False,False,9,22,రమన,రజ రఒ,False,False
+ALOTEST/2018/00018,641891,B999,2018,,Saagar,Mohana Rao,Male,,38,5,2.0,ANDB0000591,True,False,False,4,22,సాగర్,మొహన రఒ,False,False
+ALOTEST/2018/00007,630405,B999,2018,,Rama Raju,Krishniah,Male,-138621325027-05-13,50,5,6.0,CNRB0001574,True,False,False,9,22,రమ రజు,క్రిశ్నిఅహ్,False,False
+ALOTEST/2019/00004,964090,B999,2019,,Rajesh,Ramesh,Male,,26,5,22.0,UBIN0557374,True,False,False,14,14,రజెశ్,రమెశ్,False,False
+ALOTEST/2019/00001,874381,B999,2019,,Ramaiah,Krishna,Male,,45,5,2.0,ANDB0000699,True,True,False,9,9,రామయ్య,క్రిశ్న,False,False
+ALOBHGR/2018/00545,832088,B999,2018,,Bala Narsimha  Pandi,Swamy,Male,,47,1,,,False,False,False,13,20,బల నర్సిమ్హ  పన్డి,స్wఅమ్య్,False,False
+ALOTEST/2018/00014,662836,B999,2018,,Rams,Karna,Male,,36,5,23.0,UTBI0MLP818,True,False,False,13,9,రమ్స్,కర్న,False,False
