@@ -4,10 +4,12 @@
 <h1>Analytics dashboard</h1>
 <p class="sub">Live charts from the portal database — worker registrations and scheme applications.</p>
 
-<div class="grid c3" style="margin-bottom:18px">
+<div class="grid c4" style="margin-bottom:18px">
   <div class="stat"><b>{{ totals.workers }}</b><span>Workers</span></div>
   <div class="stat"><b>{{ totals.applications }}</b><span>Applications</span></div>
-  <div class="stat"><b>{{ quality.missing_dob }}</b><span>Records missing DOB</span></div>
+  <div class="stat"><b>{{ totals.payments }}</b><span>DBT payments</span></div>
+  <div class="stat"><b style="color:var(--red)"><a href="/workers/?expired=1" style="color:inherit;text-decoration:none">{{ totals.expired }}</a></b><span>Expired registrations</span></div>
+  <div class="stat"><b>{{ totals.establishments }}</b><span>Establishments</span></div>
 </div>
 
 <div class="grid c2">
@@ -17,6 +19,9 @@
   <div class="card"><h3 style="margin-top:0">Top trade codes</h3><canvas id="chTrade"></canvas></div>
   <div class="card"><h3 style="margin-top:0">Application status</h3><canvas id="chStatus" style="max-height:260px"></canvas></div>
   <div class="card"><h3 style="margin-top:0">Applications by scheme</h3><canvas id="chScheme"></canvas></div>
+  <div class="card"><h3 style="margin-top:0">DBT payment outcomes</h3><canvas id="chDBT" style="max-height:260px"></canvas></div>
+  <div class="card"><h3 style="margin-top:0">Renewals &amp; corrections</h3><canvas id="chReq"></canvas></div>
+  <div class="card"><h3 style="margin-top:0">Workers by district</h3><canvas id="chDistrict"></canvas></div>
 </div>
 
 <div class="card">
@@ -28,7 +33,7 @@
   </p>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script>
 const D = JSON.parse('{{ chart_data|escapejs }}');
 const navy = '#0E4C8C', amber = '#F5A623', palette = ['#0E4C8C','#F5A623','#2E8B57','#C0392B','#7D3C98','#2471A3','#B7950B','#148F77'];
@@ -53,6 +58,20 @@ new Chart(chStatus, {type:'doughnut', data:{labels:D.app_status.map(x=>x.status)
 
 new Chart(chScheme, {type:'bar', data:{labels:D.app_scheme.map(x=>x['subscheme__scheme__description']),
   datasets:[{label:'Applications', data:D.app_scheme.map(x=>x.n), backgroundColor:palette}]},
+  options:{indexAxis:'y', plugins:{legend:{display:false}}}});
+
+const dbtColor = {SUCCESS:'#2E8B57', FAILED:'#C0392B', PENDING:'#B7950B'};
+new Chart(chDBT, {type:'doughnut', data:{labels:D.dbt_status.map(x=>x.status),
+  datasets:[{data:D.dbt_status.map(x=>x.n), backgroundColor:D.dbt_status.map(x=>dbtColor[x.status]||navy)}]}});
+
+const reqLabels = ['SUBMITTED','APPROVED','REJECTED'];
+const pick = (arr,s) => (arr.find(x=>x.status===s)||{n:0}).n;
+new Chart(chReq, {type:'bar', data:{labels:reqLabels,
+  datasets:[{label:'Renewals', data:reqLabels.map(s=>pick(D.renewal_status,s)), backgroundColor:navy},
+            {label:'Corrections', data:reqLabels.map(s=>pick(D.change_status,s)), backgroundColor:amber}]}});
+
+new Chart(chDistrict, {type:'bar', data:{labels:D.by_district.map(x=>x['village__mandal__district__name']),
+  datasets:[{label:'Workers', data:D.by_district.map(x=>x.n), backgroundColor:'#148F77'}]},
   options:{indexAxis:'y', plugins:{legend:{display:false}}}});
 </script>
 {% endblock %}

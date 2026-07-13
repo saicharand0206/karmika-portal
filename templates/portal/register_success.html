@@ -11,6 +11,8 @@
     <tr><th>Father's name</th><td>{{ worker.father_name|default:"—" }}</td></tr>
     <tr><th>Gender / Age</th><td>{{ worker.gender }} / {{ worker.age|default:"—" }}</td></tr>
     <tr><th>Registered on</th><td>{{ worker.reg_date }}</td></tr>
+    <tr><th>Valid until</th><td><b>{{ worker.valid_until }}</b> (5 years — renew at <a href="/renew/">/renew/</a>)</td></tr>
+    {% if worker.village %}<tr><th>Village</th><td>{{ worker.village }}</td></tr>{% endif %}
     {% if worker.ifsc_code %}<tr><th>IFSC</th><td>{{ worker.ifsc_code }} {% if not worker.ifsc_valid %}<span class="badge REJECTED">invalid format</span>{% endif %}</td></tr>{% endif %}
   </table>
   <div style="margin-top:16px">

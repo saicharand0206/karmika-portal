@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registration card — {{ w.reg_no }}</title>
+<style>
+  body{margin:0;background:#E8EDF4;font-family:'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:30px 12px}
+  .actions{margin-bottom:16px}
+  .actions button,.actions a{border:none;background:#0E4C8C;color:#fff;border-radius:10px;padding:10px 18px;font:700 14px 'Segoe UI';cursor:pointer;text-decoration:none;margin:0 4px}
+  .card{width:420px;max-width:96vw;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 34px rgba(11,59,111,.25);position:relative}
+  .head{background:#0B3B6F;color:#fff;padding:14px 18px;display:flex;align-items:center;gap:10px}
+  .head .mark{width:38px;height:38px;border-radius:9px;background:#F5A623;display:flex;align-items:center;justify-content:center;font-size:19px}
+  .head b{font-size:16px}.head small{display:block;font-size:10.5px;opacity:.85;font-weight:400}
+  .body{padding:16px 18px 18px}
+  .regno{font-size:21px;font-weight:800;color:#0B3B6F;letter-spacing:.02em;margin:2px 0 12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{color:#5A6E84;text-align:left;font-weight:600;padding:4px 8px 4px 0;width:42%}
+  td{padding:4px 0;color:#1C2B3A;font-weight:600}
+  .valid{margin-top:12px;padding:9px 12px;border-radius:10px;font-size:12.5px;font-weight:700;text-align:center}
+  .valid.ok{background:#E4F4EA;color:#2E8B57}.valid.exp{background:#FBE7E4;color:#C0392B}
+  .demo{position:absolute;top:46%;left:0;right:0;text-align:center;font-size:38px;font-weight:900;color:rgba(11,59,111,.07);transform:rotate(-18deg);pointer-events:none}
+  .foot{border-top:1px dashed #DCE5F0;padding:9px 18px;font-size:10.5px;color:#8CA0B5;text-align:center}
+  @media print{ body{background:#fff;padding:0} .actions{display:none} .card{box-shadow:none;border:1px solid #ccc} }
+</style>
+</head>
+<body>
+<div class="actions">
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+  <a href="/worker/{{ w.reg_no }}/">← Back to worker</a>
+</div>
+<div class="card">
+  <div class="demo">ACADEMIC DEMO</div>
+  <div class="head">
+    <span class="mark">🏗️</span>
+    <span><b>Karmika Portal</b><small>Construction Worker Registration Card — Demo</small></span>
+  </div>
+  <div class="body">
+    <div class="regno">{{ w.reg_no }}</div>
+    <table>
+      <tr><th>Worker name</th><td>{{ w.worker_name }}{% if w.worker_name_telugu %} · {{ w.worker_name_telugu }}{% endif %}</td></tr>
+      <tr><th>Father's name</th><td>{{ w.father_name|default:"—" }}</td></tr>
+      <tr><th>Gender / Age</th><td>{{ w.gender }} / {{ w.age|default:"—" }}</td></tr>
+      <tr><th>Village</th><td>{{ w.village|default:"—" }}</td></tr>
+      <tr><th>ALO circle</th><td>{{ w.alo_circle.code|default:"—" }}</td></tr>
+      <tr><th>Registered</th><td>{{ w.reg_date|default:w.reg_year }}</td></tr>
+      {% if nominee %}<tr><th>Nominee</th><td>{{ nominee.name }} ({{ nominee.relationship }})</td></tr>{% endif %}
+    </table>
+    {% if w.is_expired %}
+      <div class="valid exp">EXPIRED on {{ w.valid_until }} — renewal required</div>
+    {% else %}
+      <div class="valid ok">VALID UNTIL {{ w.valid_until }}</div>
+    {% endif %}
+  </div>
+  <div class="foot">Student demo project — not a government document. Verify records at the portal.</div>
+</div>
+</body>
+</html>

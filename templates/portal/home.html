@@ -4,11 +4,13 @@
 <h1>Welfare services for construction workers</h1>
 <p class="sub">Register workers, browse welfare schemes, submit benefit applications, and track their status — with Cherry, the AI assistant, to guide you at every step.</p>
 
-<div class="grid c4" style="margin-bottom:22px">
+<div class="grid c4" style="margin-bottom:22px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
   <div class="stat"><b>{{ stats.workers }}</b><span>Registered workers</span></div>
+  <div class="stat"><b>{{ stats.establishments }}</b><span>Establishments</span></div>
   <div class="stat"><b>{{ stats.schemes }}</b><span>Welfare schemes</span></div>
   <div class="stat"><b>{{ stats.applications }}</b><span>Applications filed</span></div>
   <div class="stat"><b>{{ stats.approved }}</b><span>Approved benefits</span></div>
+  <div class="stat"><b>{{ stats.establishments }}</b><span>Establishments</span></div>
 </div>
 
 <div class="grid c3">
@@ -21,6 +23,16 @@
     <h3 style="margin-top:0">🎁 Claim a benefit</h3>
     <p style="color:var(--soft);font-size:13.5px">{{ stats.subschemes }} benefit categories across {{ stats.schemes }} schemes — accidental relief, maternity, marriage gift and more.</p>
     <a class="btn" href="/apply/">Apply for a scheme</a>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">🏢 Employer?</h3>
+    <p style="color:var(--soft);font-size:13.5px">Register your construction establishment and link your workforce.</p>
+    <a class="btn" href="/register-establishment/">Register establishment</a>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">🏢 Employer?</h3>
+    <p style="color:var(--soft);font-size:13.5px">Builders, contractors and project units register establishments and contribute cess.</p>
+    <a class="btn" href="/register-establishment/">Register establishment</a>
   </div>
   <div class="card">
     <h3 style="margin-top:0">🔍 Track application</h3>

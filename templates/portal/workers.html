@@ -2,30 +2,32 @@
 {% block title %}Workers{% endblock %}
 {% block content %}
 <h1>Registered workers</h1>
-<p class="sub">{{ total }} worker{{ total|pluralize }} on record. Search by name or registration number.</p>
+<p class="sub">{{ total }} worker{{ total|pluralize }} on record{% if expired %} — showing <b>expired registrations</b> only (<a href="/workers/">clear filter</a>){% endif %}. Search by name or registration number.</p>
 {% if error %}<div class="error">{{ error }}</div>{% endif %}
 <form method="get" style="display:flex;gap:10px;margin-bottom:16px;max-width:520px">
   <input type="text" name="q" value="{{ q }}" placeholder="Search name or reg. number…">
   <button class="btn" type="submit">Search</button>
+  <a class="btn amber" href="/workers/export/" style="white-space:nowrap">⬇ CSV</a>
 </form>
 <div class="card" style="padding:0;overflow-x:auto">
 <table>
-  <tr><th>Reg. No</th><th>Name</th><th>Father's name</th><th>Gender</th><th>Age</th><th>Year</th><th>Flags</th></tr>
+  <tr><th>Reg. No</th><th>Name</th><th>Gender</th><th>Age</th><th>Year</th><th>Valid until</th><th>Employer</th><th>Flags</th></tr>
   {% for w in workers %}
   <tr>
     <td><a href="/worker/{{ w.reg_no }}/">{{ w.reg_no }}</a></td>
     <td>{{ w.worker_name }}</td>
-    <td>{{ w.father_name|default:"—" }}</td>
     <td>{{ w.gender }}</td>
     <td>{{ w.age|default:"—" }}</td>
     <td>{{ w.reg_year }}</td>
+    <td>{% if w.valid_until %}{{ w.valid_until }}{% if w.is_expired %} <span class="badge REJECTED">expired</span>{% endif %}{% else %}—{% endif %}</td>
+    <td style="font-size:12px">{{ w.employer.name|default:"—"|truncatechars:22 }}</td>
     <td>
       {% if w.is_test_row %}<span class="badge REJECTED">test row</span>{% endif %}
       {% if w.migrant_worker %}<span class="badge SUBMITTED">migrant</span>{% endif %}
     </td>
   </tr>
   {% empty %}
-  <tr><td colspan="7" style="text-align:center;color:var(--faint);padding:24px">No workers found.</td></tr>
+  <tr><td colspan="8" style="text-align:center;color:var(--faint);padding:24px">No workers found.</td></tr>
   {% endfor %}
 </table>
 </div>

@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏗️</text></svg>">
 <title>{% block title %}Karmika Portal{% endblock %}</title>
 <style>
   :root{
@@ -28,13 +29,15 @@
   main{max-width:1050px;margin:0 auto;padding:26px 18px 60px}
   h1{font-size:26px;margin:0 0 6px;letter-spacing:-.02em}
   .sub{color:var(--soft);margin:0 0 22px;font-size:14.5px}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;transition:box-shadow .18s,transform .18s}
+  .card:hover{box-shadow:0 6px 22px rgba(11,59,111,.08)}
   .grid{display:grid;gap:14px}
   .grid.c2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
   .grid.c3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
   .grid.c4{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
 
-  .stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;transition:box-shadow .18s}
+  .stat:hover{box-shadow:0 6px 20px rgba(11,59,111,.08)}
   .stat b{font-size:28px;color:var(--navy);display:block}
   .stat span{font-size:12.5px;color:var(--soft);text-transform:uppercase;letter-spacing:.05em}
 
@@ -45,7 +48,9 @@
   input:focus,select:focus,textarea:focus{outline:2px solid #0E4C8C33;border-color:var(--navy2)}
   .btn{display:inline-block;border:none;background:var(--navy2);color:#fff;border-radius:10px;
     padding:11px 22px;font:700 14.5px 'Segoe UI',system-ui;cursor:pointer;text-decoration:none}
+  .btn{transition:background .15s,transform .1s}
   .btn:hover{background:var(--navy)}
+  .btn:active{transform:scale(.98)}
   .btn.amber{background:var(--amber);color:#3A2A00}
   .checkline{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px}
 
@@ -63,6 +68,15 @@
   .error{background:#FBE7E4;border:1px solid #F1C4BE;color:var(--red);padding:10px 14px;border-radius:10px;font-size:13.5px;margin-bottom:14px}
   .success{background:#E4F4EA;border:1px solid #BFE3CC;color:var(--green);padding:10px 14px;border-radius:10px;font-size:13.5px;margin-bottom:14px}
   footer.site{text-align:center;color:var(--faint);font-size:12px;padding:20px;border-top:1px solid var(--border)}
+  .card{transition:box-shadow .15s}
+  .card:hover{box-shadow:0 4px 16px rgba(11,59,111,.07)}
+  .btn{transition:transform .1s, background .15s}
+  .btn:active{transform:scale(.97)}
+  @media print{
+    nav.main, .demo-banner, #cherryBtn, #cherryPanel, .no-print, footer.site{display:none !important}
+    body{background:#fff}
+    .card{border:1px solid #999;box-shadow:none}
+  }
 
   /* ---------- Cherry widget ---------- */
   #cherryBtn{position:fixed;right:20px;bottom:20px;width:58px;height:58px;border-radius:50%;
@@ -86,6 +100,8 @@
   .cInput{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:#fff}
   .cInput input{flex:1;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13.5px}
   .cInput button{border:none;background:#C8102E;color:#fff;border-radius:10px;padding:0 16px;font-weight:700;cursor:pointer}
+  .wchip{border:1px solid #F0C6CD;background:#fff;color:#C8102E;border-radius:999px;padding:5px 11px;font:600 11.5px 'Segoe UI',system-ui;cursor:pointer}
+  .wchip:hover{background:#FBE4E8}
 </style>
 </head>
 <body>
@@ -98,10 +114,13 @@
   <nav class="main">
     <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
     <a href="/register/" class="{% if 'register' in request.path %}active{% endif %}">Register Worker</a>
-    <a href="/workers/" class="{% if 'worker' in request.path %}active{% endif %}">Workers</a>
+    <a href="/workers/" class="{% if 'worker' in request.path and 'establishment' not in request.path %}active{% endif %}">Workers</a>
+    <a href="/establishments/" class="{% if 'establishment' in request.path %}active{% endif %}">Establishments</a>
     <a href="/schemes/" class="{% if 'schemes' in request.path %}active{% endif %}">Schemes</a>
     <a href="/apply/" class="{% if 'apply' in request.path %}active{% endif %}">Apply</a>
-    <a href="/status/" class="{% if 'status' in request.path %}active{% endif %}">Track Status</a>
+    <a href="/renew/" class="{% if 'renew' in request.path %}active{% endif %}">Renew</a>
+    <a href="/change-request/" class="{% if 'change-request' in request.path %}active{% endif %}">Corrections</a>
+    <a href="/track/" class="{% if 'track' in request.path or 'status' in request.path %}active{% endif %}">Track Center</a>
     <a href="/dashboard/" class="{% if 'dashboard' in request.path %}active{% endif %}">Dashboard</a>
   </nav>
 </header>
@@ -121,7 +140,12 @@
     <button onclick="toggleCherry(false)">✕</button>
   </div>
   <div id="cherryMsgs">
-    <div class="cb bot">Hi! I'm Cherry 🍒 — I can explain the welfare schemes, check a registration or application number (just paste it), tell you what documents you need, or guide you around the portal. What do you need?</div>
+    <div class="cb bot">Hi! I'm Cherry 🍒 — I can explain the welfare schemes, check any number (registration, KPA, KPR, KPC, EST, DBT), tell you what documents you need, or guide you around the portal. What do you need?</div>
+    <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px">
+      <button class="wchip" onclick="cherryQuick('What schemes can I apply for?')">Schemes</button>
+      <button class="wchip" onclick="cherryQuick('Show all pending applications')">Pending</button>
+      <button class="wchip" onclick="cherryQuick('Which registrations have expired?')">Renewals due</button>
+    </div>
   </div>
   <div class="cInput">
     <input id="cherryInput" placeholder="e.g. What documents for Maternity Benefit?" />
@@ -137,6 +161,7 @@ function toggleCherry(open){
 }
 document.getElementById('cherryBtn').onclick = () => toggleCherry(!document.getElementById('cherryPanel').classList.contains('open'));
 document.getElementById('cherryInput').addEventListener('keydown', e => { if(e.key === 'Enter') cherrySend(); });
+function cherryQuick(q){ document.getElementById('cherryInput').value = q; cherrySend(); }
 
 function addBubble(text, cls){
   const d = document.createElement('div');

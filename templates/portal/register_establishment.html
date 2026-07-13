@@ -1,0 +1,62 @@
+{% extends "portal/base.html" %}
+{% block title %}Register establishment{% endblock %}
+{% block content %}
+<h1>Establishment registration</h1>
+<p class="sub">For builders, contractors, developers and project units employing construction workers. Registration is valid for 5 years.</p>
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+{% if success %}
+<div class="success">Establishment registered. Save this number.</div>
+<div class="card printable" style="max-width:560px">
+  <p style="font-size:13px;color:var(--soft);margin:0">Establishment number</p>
+  <p style="font-size:26px;font-weight:800;color:var(--navy);margin:4px 0 14px">{{ success.est_no }}</p>
+  <table>
+    <tr><th>Name</th><td>{{ success.name }}</td></tr>
+    <tr><th>Employer / owner</th><td>{{ success.employer_name }}</td></tr>
+    <tr><th>Category</th><td>{{ success.get_category_display }}</td></tr>
+    <tr><th>Declared workers</th><td>{{ success.est_workers_count }}</td></tr>
+    <tr><th>Cess paid</th><td>₹{{ success.cess_paid }}</td></tr>
+    <tr><th>Valid until</th><td><b>{{ success.valid_until }}</b></td></tr>
+  </table>
+  <div style="margin-top:16px" class="no-print">
+    <button class="btn" onclick="window.print()">🖨 Print acknowledgement</button>
+    <a class="btn amber" href="/establishments/">View all establishments</a>
+  </div>
+</div>
+{% else %}
+<div class="card" style="max-width:680px">
+  <form method="post">{% csrf_token %}
+    <label>Establishment name *</label>
+    <input type="text" name="name" required maxlength="150" placeholder="e.g. Sri Constructions Pvt Ltd">
+    <div class="grid c2">
+      <div><label>Employer / owner name *</label>
+        <input type="text" name="employer_name" required maxlength="120"></div>
+      <div><label>Category</label>
+        <select name="category">
+          <option value="CONTRACTOR">Contractor</option>
+          <option value="BUILDER">Builder</option>
+          <option value="DEVELOPER">Developer</option>
+          <option value="GOVT_PROJECT">Government project</option>
+          <option value="OTHER">Other</option>
+        </select></div>
+    </div>
+    <div class="grid c2">
+      <div><label>Phone</label><input type="tel" name="phone" maxlength="15"></div>
+      <div><label>Declared number of workers</label>
+        <input type="number" name="est_workers_count" min="1" placeholder="e.g. 45"></div>
+    </div>
+    <label>Site / office address</label>
+    <input type="text" name="address" maxlength="250">
+    <label>Village</label>
+    <select name="village">
+      <option value="">— select village —</option>
+      {% for v in villages %}
+      <option value="{{ v.id }}">{{ v.mandal.district.name }} › {{ v.mandal.name }} › {{ v.name }}</option>
+      {% endfor %}
+    </select>
+    <label>Cess paid so far (₹)</label>
+    <input type="number" name="cess_paid" min="0" step="0.01" placeholder="e.g. 250000">
+    <div style="margin-top:20px"><button class="btn" type="submit">Register establishment</button></div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

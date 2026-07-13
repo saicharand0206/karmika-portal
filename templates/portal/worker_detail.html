@@ -2,16 +2,24 @@
 {% block title %}{{ w.worker_name }}{% endblock %}
 {% block content %}
 <h1>{{ w.worker_name }} {% if w.worker_name_telugu %}<span style="font-size:18px;color:var(--soft)">({{ w.worker_name_telugu }})</span>{% endif %}</h1>
-<p class="sub">Registration {{ w.reg_no }} · registered {{ w.reg_year }}</p>
+<p class="sub">Registration {{ w.reg_no }} · registered {{ w.reg_year }} ·
+  {% if w.valid_until %}valid until {{ w.valid_until }}
+    {% if w.is_expired %}<span class="badge REJECTED">EXPIRED — <a href="/renew/" style="color:inherit">renew now</a></span>
+    {% else %}<span class="badge APPROVED">active</span>{% endif %}
+  {% endif %}</p>
 <div class="grid c2">
   <div class="card">
-    <h3 style="margin-top:0">Worker details</h3>
+    <h3 style="margin-top:0">Worker details
+      <a class="btn amber" href="/worker/{{ w.reg_no }}/card/" style="float:right;padding:7px 14px;font-size:12.5px">🪪 Registration card</a></h3>
     <table>
       <tr><th>Father's name</th><td>{{ w.father_name|default:"—" }}</td></tr>
       <tr><th>Gender / Age</th><td>{{ w.gender }} / {{ w.age|default:"—" }}</td></tr>
       <tr><th>Date of birth</th><td>{{ w.date_of_birth|default:"not on record" }}</td></tr>
       <tr><th>Registration date</th><td>{{ w.reg_date|default:"—" }}</td></tr>
       <tr><th>Trade code</th><td>{{ w.trade_code|default:"—" }}</td></tr>
+      <tr><th>Village</th><td>{{ w.village|default:"—" }}</td></tr>
+      <tr><th>Employer</th><td>{% if w.employer %}<a href="/establishment/{{ w.employer.est_no }}/">{{ w.employer.name }}</a>{% else %}—{% endif %}</td></tr>
+      <tr><th>ALO circle</th><td>{{ w.alo_circle|default:"—" }}</td></tr>
       <tr><th>District code</th><td>{{ w.district_code|default:"—" }}</td></tr>
       <tr><th>IFSC</th><td>{{ w.ifsc_code|default:"—" }} {% if w.ifsc_code and not w.ifsc_valid %}<span class="badge REJECTED">invalid format</span>{% endif %}</td></tr>
       <tr><th>Migrant worker</th><td>{{ w.migrant_worker|yesno:"Yes,No" }}</td></tr>
@@ -29,6 +37,38 @@
     {% empty %}
       <p style="color:var(--faint)">No applications yet. <a href="/apply/">Apply for a scheme →</a></p>
     {% endfor %}
+  </div>
+</div>
+
+<div class="grid c2">
+  <div class="card">
+    <h3 style="margin-top:0">Nominees / dependents</h3>
+    {% for n in w.nominees.all %}
+      <p style="margin:6px 0">👤 <b>{{ n.name }}</b> — {{ n.relationship }}{% if n.age %}, {{ n.age }} yrs{% endif %}
+      {% if n.is_primary %}<span class="badge SUBMITTED">primary</span>{% endif %}</p>
+    {% empty %}<p style="color:var(--faint)">No nominee on record. <a href="/change-request/">Add via a correction request →</a></p>{% endfor %}
+
+    <h3>Renewals</h3>
+    {% for r in w.renewals.all %}
+      <p style="margin:6px 0"><b>{{ r.req_no }}</b> — to {{ r.period_to }} <span class="badge {{ r.status }}">{{ r.get_status_display }}</span></p>
+    {% empty %}<p style="color:var(--faint)">No renewals filed.</p>{% endfor %}
+
+    <h3>Correction requests</h3>
+    {% for c in w.change_requests.all %}
+      <p style="margin:6px 0"><b>{{ c.req_no }}</b> — {{ c.get_request_type_display }} → “{{ c.new_value }}” <span class="badge {{ c.status }}">{{ c.get_status_display }}</span></p>
+    {% empty %}<p style="color:var(--faint)">No correction requests.</p>{% endfor %}
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">DBT payments</h3>
+    {% for a in apps %}{% for pmt in a.payments.all %}
+      <p style="margin:6px 0;border-bottom:1px solid var(--border);padding-bottom:6px">
+        💸 <b>₹{{ pmt.amount }}</b> — {{ a.app_no }} · batch {{ pmt.batch.batch_no }}
+        <span class="badge {% if pmt.status == 'SUCCESS' %}APPROVED{% elif pmt.status == 'FAILED' %}REJECTED{% else %}SUBMITTED{% endif %}">{{ pmt.status }}</span>
+        {% if pmt.failure_reason %}<br><span style="color:var(--red);font-size:12px">{{ pmt.failure_reason }}</span>{% endif %}
+      </p>
+    {% endfor %}{% empty %}{% endfor %}
+    {% if not apps %}<p style="color:var(--faint)">No payments — payments follow approved applications.</p>{% endif %}
   </div>
 </div>
 {% endblock %}

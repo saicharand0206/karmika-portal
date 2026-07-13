@@ -16,7 +16,7 @@ from django.db import models
 
 
 class Worker(models.Model):
-    GENDER_CHOICES = [("Male", "Male"), ("Female", "Female"), ("Unknown", "Unknown")]
+    GENDER_CHOICES = [("Male", "Male"), ("Female", "Female"), ("Others", "Others"), ("Unknown", "Unknown")]
 
     reg_no = models.CharField(max_length=40, unique=True)
     temp_id = models.CharField(max_length=20, blank=True)
@@ -41,6 +41,15 @@ class Worker(models.Model):
     # Data-quality flags from the cleaning pipeline
     is_test_row = models.BooleanField(default=False)
     age_flag = models.BooleanField(default=False)
+    # Phase 2: 5-year registration validity + geographic/administrative links
+    valid_until = models.DateField(null=True, blank=True,
+                                   help_text="Registration valid for 5 years; extended by approved renewals")
+    village = models.ForeignKey("Village", null=True, blank=True, on_delete=models.SET_NULL,
+                                related_name="workers")
+    alo_circle = models.ForeignKey("ALOCircle", null=True, blank=True, on_delete=models.SET_NULL,
+                                   related_name="workers")
+    employer = models.ForeignKey("Establishment", null=True, blank=True, on_delete=models.SET_NULL,
+                                 related_name="workers")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -48,6 +57,11 @@ class Worker(models.Model):
 
     def __str__(self):
         return f"{self.reg_no} — {self.worker_name}"
+
+    @property
+    def is_expired(self):
+        from datetime import date as _date
+        return bool(self.valid_until and self.valid_until < _date.today())
 
 
 class Scheme(models.Model):
@@ -104,3 +118,182 @@ class Application(models.Model):
 
     def __str__(self):
         return f"{self.app_no} — {self.subscheme.description} [{self.status}]"
+
+
+# ============================================================ Phase 2
+# Master tables (geographic + administrative hierarchies) and
+# transaction tables (renewals, change requests, DBT payments).
+# Design follows the "master tables vs request tables" split.
+
+class District(models.Model):
+    code = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=80)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Mandal(models.Model):
+    district = models.ForeignKey(District, on_delete=models.CASCADE, related_name="mandals")
+    code = models.CharField(max_length=10)
+    name = models.CharField(max_length=80)
+
+    class Meta:
+        ordering = ["name"]
+        unique_together = [("district", "code")]
+
+    def __str__(self):
+        return f"{self.name} ({self.district.name})"
+
+
+class Village(models.Model):
+    mandal = models.ForeignKey(Mandal, on_delete=models.CASCADE, related_name="villages")
+    code = models.CharField(max_length=10)
+    name = models.CharField(max_length=80)
+
+    class Meta:
+        ordering = ["name"]
+        unique_together = [("mandal", "code")]
+
+    def __str__(self):
+        return f"{self.name}, {self.mandal.name}"
+
+
+class ALOCircle(models.Model):
+    """Assistant Labour Officer circle — the administrative unit that
+    processes registrations (State -> District -> ALO circle)."""
+    code = models.CharField(max_length=15, unique=True)
+    name = models.CharField(max_length=100)
+    district = models.ForeignKey(District, null=True, blank=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        ordering = ["code"]
+
+    def __str__(self):
+        return f"{self.code} — {self.name}"
+
+
+class Nominee(models.Model):
+    """Dependent/nominee attached to a worker (receives benefits on death claims)."""
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE, related_name="nominees")
+    name = models.CharField(max_length=120)
+    relationship = models.CharField(max_length=60)
+    age = models.IntegerField(null=True, blank=True)
+    share_percent = models.IntegerField(default=100)
+    is_primary = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.relationship}) — nominee of {self.worker.worker_name}"
+
+
+class Renewal(models.Model):
+    """Registrations are valid for 5 years; workers file a renewal to extend."""
+    STATUS_CHOICES = [("SUBMITTED", "Submitted"), ("APPROVED", "Approved"), ("REJECTED", "Rejected")]
+
+    req_no = models.CharField(max_length=30, unique=True)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE, related_name="renewals")
+    period_from = models.DateField()
+    period_to = models.DateField()
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default="SUBMITTED")
+    remarks = models.CharField(max_length=250, blank=True)
+    requested_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-requested_at"]
+
+    def __str__(self):
+        return f"{self.req_no} — {self.worker.reg_no} [{self.status}]"
+
+
+class ChangeRequest(models.Model):
+    """Worker-initiated corrections: name change, nominee change, bank change."""
+    TYPE_CHOICES = [("NAME_CHANGE", "Name change"), ("NOMINEE_CHANGE", "Nominee change"),
+                    ("BANK_CHANGE", "Bank/IFSC change")]
+    STATUS_CHOICES = [("SUBMITTED", "Submitted"), ("APPROVED", "Approved"), ("REJECTED", "Rejected")]
+
+    req_no = models.CharField(max_length=30, unique=True)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE, related_name="change_requests")
+    request_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    old_value = models.CharField(max_length=200, blank=True)
+    new_value = models.CharField(max_length=200)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default="SUBMITTED")
+    remarks = models.CharField(max_length=250, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.req_no} — {self.get_request_type_display()} [{self.status}]"
+
+
+class DBTBatch(models.Model):
+    """Direct Benefit Transfer batch — approved benefits are paid in batches."""
+    batch_no = models.CharField(max_length=20, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=12, default="OPEN",
+                              choices=[("OPEN", "Open"), ("PROCESSED", "Processed")])
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name_plural = "DBT batches"
+
+    def __str__(self):
+        return self.batch_no
+
+
+class DBTPayment(models.Model):
+    """One benefit payment to a worker's bank account. Failed transactions
+    stay on record and can be retried in a later batch."""
+    STATUS_CHOICES = [("PENDING", "Pending"), ("SUCCESS", "Success"), ("FAILED", "Failed")]
+
+    batch = models.ForeignKey(DBTBatch, on_delete=models.CASCADE, related_name="payments")
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name="payments")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PENDING")
+    failure_reason = models.CharField(max_length=150, blank=True)
+    retry_of = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL,
+                                 related_name="retries")
+
+    class Meta:
+        ordering = ["-id"]
+
+    def __str__(self):
+        return f"{self.batch.batch_no} / {self.application.app_no} — ₹{self.amount} [{self.status}]"
+
+
+class Establishment(models.Model):
+    """Employer/organization registration (the 'Enterprise/Labour' side of the
+    note). Under the BOCW Act, construction establishments register with the
+    board and pay cess that funds the welfare schemes."""
+    CATEGORY_CHOICES = [("BUILDER", "Builder"), ("CONTRACTOR", "Contractor"),
+                        ("DEVELOPER", "Developer"), ("GOVT_PROJECT", "Government project"),
+                        ("OTHER", "Other")]
+
+    est_no = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=150)
+    employer_name = models.CharField(max_length=120, help_text="Owner / responsible person")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="CONTRACTOR")
+    phone = models.CharField(max_length=15, blank=True)
+    address = models.CharField(max_length=250, blank=True)
+    village = models.ForeignKey(Village, null=True, blank=True, on_delete=models.SET_NULL,
+                                related_name="establishments")
+    est_workers_count = models.IntegerField(default=0, help_text="Declared number of workers")
+    cess_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0,
+                                    help_text="Cess contribution to the welfare fund (₹)")
+    registered_date = models.DateField(auto_now_add=True)
+    valid_until = models.DateField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-id"]
+
+    def __str__(self):
+        return f"{self.est_no} — {self.name}"
+
+    @property
+    def is_expired(self):
+        from datetime import date as _date
+        return bool(self.valid_until and self.valid_until < _date.today())

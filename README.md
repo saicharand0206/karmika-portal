@@ -14,8 +14,17 @@ into the live database.
 - **Benefit applications** with auto-generated application numbers (KPA-YYYY-NNNNN) and status tracking
 - **Analytics dashboard**: 6 live Chart.js charts (registrations by year, age, gender, trades, application status/schemes) + data-quality panel
 - **Admin back-office** (/admin/): approve/reject applications, manage all records (admin / karmika123 — change it)
+- **5-year validity & renewals**: every registration expires after 5 years; renewal requests (KPR numbers) extend validity on admin approval
+- **Nominees/dependents** attached to workers; captured at registration or via correction requests
+- **Correction requests** (KPC numbers): name/nominee/bank changes, auto-applied on approval
+- **Geographic & administrative masters**: Telangana → District → Mandal → Village, plus ALO circles
+- **DBT payments**: benefit payments in batches, failed-transaction tracking with reasons, and one-click retry batches from the admin
+- **Establishment/employer registration** (EST numbers): builders, contractors, developers and project units with declared worker counts and cess contributions; workers link to their employer; detail pages show linked workers
+- **Printable worker registration card** (/worker/&lt;reg_no&gt;/card/) and **CSV export** of the register (/workers/export/)
+- **Universal tracker** (/status/): one box accepts KPA, KPR, and KPC numbers
+- **🍒 Cherry Tracking Center (/track/)**: every application, renewal, correction and payment in one dashboard with Cherry embedded — quick-action buttons for pending applications, failed payments, and renewals due
 - **Cherry AI assistant** on every page, connected to the database:
-  paste a registration number → it fetches the worker; paste an application number → it reports status;
+  paste any number (registration, KPA application, KPR renewal, KPC correction, DBT batch) → it fetches the live record with payment details and validity;
   ask about a scheme → it lists the required documents; it also knows live portal stats and guides navigation.
 
 ## How Cherry connects everything
