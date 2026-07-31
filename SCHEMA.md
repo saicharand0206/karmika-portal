@@ -81,3 +81,10 @@ Worker.employer FK → Establishment (workers linked to where they work).
 /worker/<reg_no>/card/ — printable registration card
 /workers/export/ — CSV download of the worker register
 /establishment/<est_no>/ — establishment detail with linked workers
+
+
+## v4 (monitoring redesign)
+Scheme gained task-specification fields: eligibility, procedure, benefit_amount.
+Citizen-facing form pages removed (register/apply/renew/corrections/establishments);
+their tables remain as monitored data. Public routes now: /, /schemes/, /track/,
+/status/, /worker/<reg_no>/ (read-only record view), /dashboard/, /api/chat, /admin/.
