@@ -18,6 +18,36 @@ from portal.models import (Worker, Scheme, SubScheme, Application, District,
 
 DATA = Path(__file__).resolve().parents[3] / "data"
 
+SCHEME_SPECS = {
+    1: ("Nominee or legal heir of a registered worker whose death occurred due to an accident, with the registration active on the date of the accident.",
+        "The nominee submits the claim form with the FIR copy, post-mortem report, death certificate and bank passbook at the ALO office. After the ALO enquiry and approval, the amount is credited through DBT.",
+        "Rs. 6,00,000 including funeral expenses (sample value)"),
+    2: ("Registered worker who suffered a permanent partial or total disability due to an accident, certified by the medical board.",
+        "The worker submits the disability certificate and the medical records at the ALO office. The sanction is given based on the percentage of disability after verification.",
+        "Up to Rs. 5,00,000 based on disability percentage (sample value)"),
+    3: ("Nominee or legal heir of a registered worker whose death occurred due to natural causes.",
+        "The nominee submits the death certificate, the registration card of the worker and the bank passbook at the ALO office. The amount is credited after verification.",
+        "Rs. 1,00,000 including funeral expenses (sample value)"),
+    4: ("Registered woman worker, or the wife of a registered worker, limited to the first two deliveries.",
+        "The claim is submitted with the discharge summary, the birth certificate and the bank passbook within the prescribed time after the delivery.",
+        "Rs. 30,000 per delivery (sample value)"),
+    9: ("Registered worker or the children of a registered worker, as a one-time marriage gift.",
+        "The claim is submitted with the marriage certificate, the age proofs and the bank passbook at the ALO office after the marriage.",
+        "Rs. 25,000 one-time (sample value)"),
+    12: ("Registered worker facing distress due to a major illness or a natural calamity.",
+        "The application is submitted with the supporting proofs of the distress and the medical records, and the relief is sanctioned after the ALO enquiry.",
+        "Up to Rs. 20,000 (sample value)"),
+    13: ("Registered worker who lost a limb in an accident and requires an artificial limb.",
+        "The application is submitted with the medical recommendation. The artificial limb is provided through the empanelled agency after approval.",
+        "Cost of the artificial limb (sample value)"),
+}
+GENERIC_SPEC = (
+    "Registered construction workers and their dependents, as applicable to the scheme.",
+    "The application is submitted at the ALO office with the required documents, and the benefit is provided after verification and approval.",
+    "As per the scheme norms (sample value)")
+
+
+
 MASTER = {
     "Hyderabad": {"Amberpet": ["Amberpet", "Golnaka"], "Musheerabad": ["Musheerabad", "Bholakpur"]},
     "Medchal-Malkajgiri": {"Uppal": ["Uppal Kalan", "Peerzadiguda"], "Kapra": ["Kapra", "Cherlapally"]},
@@ -101,6 +131,16 @@ class Command(BaseCommand):
                     defaults={"description": row["subscheme_desc"].strip(),
                               "required_fields": row["form_fields"].strip()})
         self.stdout.write(f"Schemes: {Scheme.objects.count()} / SubSchemes: {SubScheme.objects.count()}")
+
+        # ---- Task-oriented specifications for every scheme ----
+        for scheme in Scheme.objects.all():
+            elig, proc, amount = SCHEME_SPECS.get(scheme.code, GENERIC_SPEC)
+            if not scheme.eligibility:
+                scheme.eligibility = elig
+                scheme.procedure = proc
+                scheme.benefit_amount = amount
+                scheme.save(update_fields=["eligibility", "procedure", "benefit_amount"])
+        self.stdout.write("Scheme specifications filled")
 
         # ---- Workers ----
         villages = list(Village.objects.all())

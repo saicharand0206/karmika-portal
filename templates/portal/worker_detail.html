@@ -4,7 +4,7 @@
 <h1>{{ w.worker_name }} {% if w.worker_name_telugu %}<span style="font-size:18px;color:var(--soft)">({{ w.worker_name_telugu }})</span>{% endif %}</h1>
 <p class="sub">Registration {{ w.reg_no }} · registered {{ w.reg_year }} ·
   {% if w.valid_until %}valid until {{ w.valid_until }}
-    {% if w.is_expired %}<span class="badge REJECTED">EXPIRED — <a href="/renew/" style="color:inherit">renew now</a></span>
+    {% if w.is_expired %}<span class="badge REJECTED">EXPIRED</span>
     {% else %}<span class="badge APPROVED">active</span>{% endif %}
   {% endif %}</p>
 <div class="grid c2">
@@ -35,7 +35,7 @@
         <span style="color:var(--faint);font-size:12px">{{ a.submitted_at|date:"d M Y" }}</span>
       </p>
     {% empty %}
-      <p style="color:var(--faint)">No applications yet. <a href="/apply/">Apply for a scheme →</a></p>
+      <p style="color:var(--faint)">No applications on record.</p>
     {% endfor %}
   </div>
 </div>
@@ -46,7 +46,7 @@
     {% for n in w.nominees.all %}
       <p style="margin:6px 0">👤 <b>{{ n.name }}</b> — {{ n.relationship }}{% if n.age %}, {{ n.age }} yrs{% endif %}
       {% if n.is_primary %}<span class="badge SUBMITTED">primary</span>{% endif %}</p>
-    {% empty %}<p style="color:var(--faint)">No nominee on record. <a href="/change-request/">Add via a correction request →</a></p>{% endfor %}
+    {% empty %}<p style="color:var(--faint)">No nominee on record.</p>{% endfor %}
 
     <h3>Renewals</h3>
     {% for r in w.renewals.all %}

@@ -1,24 +1,31 @@
 {% extends "portal/base.html" %}
-{% block title %}Welfare schemes{% endblock %}
+{% block title %}Scheme information{% endblock %}
 {% block content %}
-<h1>Welfare schemes</h1>
-<p class="sub">Each scheme has one or more benefit categories. Expand a category to see the required form fields and documents. Ask Cherry 🍒 if you're unsure which one applies to you.</p>
+<h1>Welfare schemes — information</h1>
+<p class="sub">Task-oriented specification of every scheme: who is eligible, what documents are needed, the procedure to follow, and the benefit amount. Benefit amounts shown are <b>sample values for the demo</b>. Ask Cherry 🍒 the same questions in chat.</p>
 {% for s in schemes %}
 <div class="card">
-  <h3 style="margin:0 0 4px;color:var(--navy)">{{ s.code }}. {{ s.description }}</h3>
-  <p style="margin:0 0 10px;color:var(--faint);font-size:12px;text-transform:uppercase;letter-spacing:.05em">{{ s.scheme_type }}</p>
+  <h3 style="margin:0 0 2px;color:var(--navy)">{{ s.code }}. {{ s.description }}</h3>
+  <p style="margin:0 0 12px;color:var(--faint);font-size:12px;text-transform:uppercase;letter-spacing:.05em">{{ s.scheme_type }}</p>
+
+  <table style="margin-bottom:10px">
+    <tr><th style="width:150px">Eligibility</th><td>{{ s.eligibility }}</td></tr>
+    <tr><th>Procedure</th><td>{{ s.procedure }}</td></tr>
+    <tr><th>Benefit amount</th><td><b>{{ s.benefit_amount }}</b></td></tr>
+  </table>
+
+  <p style="font-size:12.5px;color:var(--soft);margin:0 0 4px"><b>Documents required (by benefit category):</b></p>
   {% for ss in s.subschemes.all %}
-  <details style="border-top:1px solid var(--border);padding:8px 0">
-    <summary style="cursor:pointer;font-weight:600;font-size:14px">{{ ss.description }}</summary>
-    <div style="padding:10px 4px 4px">
-      <p style="font-size:12.5px;color:var(--soft);margin:0 0 6px"><b>Required fields &amp; documents:</b></p>
-      <ul style="margin:0;padding-left:18px;font-size:13px;color:var(--soft);columns:2;column-gap:24px">
-        {% for item in ss.required_list %}<li>{{ item }}</li>{% endfor %}
-      </ul>
-      <p style="margin:12px 0 0"><a class="btn amber" href="/apply/?sub={{ ss.id }}" style="padding:8px 16px;font-size:13px">Apply for this benefit</a></p>
-    </div>
+  <details style="border-top:1px solid var(--border);padding:7px 0">
+    <summary style="cursor:pointer;font-weight:600;font-size:13.5px">{{ ss.description }}</summary>
+    <ul style="margin:8px 0 4px;padding-left:18px;font-size:13px;color:var(--soft);columns:2;column-gap:24px">
+      {% for item in ss.required_list %}<li>{{ item }}</li>{% endfor %}
+    </ul>
   </details>
   {% endfor %}
 </div>
 {% endfor %}
+<div class="card" style="background:var(--surface2)">
+  <p style="margin:0;font-size:13px;color:var(--soft)">ℹ️ This page is for information only. Applications are submitted through the department's own system; use the <a href="/track/">Tracking Center</a> or ask Cherry to check the status of an existing record.</p>
+</div>
 {% endblock %}

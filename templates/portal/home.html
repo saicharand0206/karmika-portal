@@ -1,53 +1,56 @@
 {% extends "portal/base.html" %}
-{% block title %}Karmika Portal — Home{% endblock %}
+{% block title %}Karmika Monitor — Home{% endblock %}
 {% block content %}
-<h1>Welfare services for construction workers</h1>
-<p class="sub">Register workers, browse welfare schemes, submit benefit applications, and track their status — with Cherry, the AI assistant, to guide you at every step.</p>
+<div style="margin:-30px -18px 28px;padding:52px 18px 46px;text-align:center;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 56px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 56px),
+    linear-gradient(165deg, var(--navy3), var(--navy) 65%, var(--navy2));
+  border-bottom:5px solid transparent;
+  border-image:repeating-linear-gradient(-45deg,var(--amber) 0 14px,var(--navy3) 14px 28px) 5;">
+  <div style="width:92px;height:92px;margin:0 auto 16px;border-radius:26px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:48px;backdrop-filter:blur(2px)">🍒</div>
+  <h1 style="font-size:clamp(28px,5vw,42px);color:#fff;margin:0 0 10px">Cherry does the work.</h1>
+  <p style="max-width:560px;margin:0 auto 22px;color:#D9E4F2;font-size:15px;line-height:1.6">
+    A task-oriented assistant for scheme information and monitoring. Ask about any scheme's
+    eligibility, documents, procedure or benefit amount — or paste any record number to check
+    its status. Officers can ask for pending items, failed payments and expired registrations.
+  </p>
+  <button class="btn amber" onclick="toggleCherry(true)" style="font-size:15.5px;padding:13px 26px">🍒 Ask Cherry now</button>
+  <a class="btn" href="/track/" style="margin-left:8px;background:rgba(255,255,255,.14);backdrop-filter:blur(2px)">Open Tracking Center</a>
+</div>
 
-<div class="grid c4" style="margin-bottom:22px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-  <div class="stat"><b>{{ stats.workers }}</b><span>Registered workers</span></div>
-  <div class="stat"><b>{{ stats.establishments }}</b><span>Establishments</span></div>
-  <div class="stat"><b>{{ stats.schemes }}</b><span>Welfare schemes</span></div>
-  <div class="stat"><b>{{ stats.applications }}</b><span>Applications filed</span></div>
-  <div class="stat"><b>{{ stats.approved }}</b><span>Approved benefits</span></div>
-  <div class="stat"><b>{{ stats.establishments }}</b><span>Establishments</span></div>
+<div class="grid c3" style="margin:0 0 18px">
+  <div class="stat"><b>{{ stats.schemes }}</b><span>Schemes · {{ stats.subschemes }} benefit categories</span></div>
+  <div class="stat"><b>{{ stats.pending }}</b><span>Applications pending</span></div>
+  <div class="stat"><b style="color:var(--red)">{{ stats.failed_payments }}</b><span>Failed DBT payments</span></div>
 </div>
 
 <div class="grid c3">
   <div class="card">
-    <h3 style="margin-top:0">📝 New worker?</h3>
-    <p style="color:var(--soft);font-size:13.5px">Register in two minutes and get a registration number instantly.</p>
-    <a class="btn" href="/register/">Register now</a>
+    <h3 style="margin-top:0">📖 Scheme information</h3>
+    <p style="color:var(--soft);font-size:13.5px">Every scheme with its eligibility, documents, procedure and benefit amount — the same specifications Cherry answers from.</p>
+    <a class="btn" href="/schemes/">View schemes</a>
   </div>
   <div class="card">
-    <h3 style="margin-top:0">🎁 Claim a benefit</h3>
-    <p style="color:var(--soft);font-size:13.5px">{{ stats.subschemes }} benefit categories across {{ stats.schemes }} schemes — accidental relief, maternity, marriage gift and more.</p>
-    <a class="btn" href="/apply/">Apply for a scheme</a>
+    <h3 style="margin-top:0">🔎 Tracking Center</h3>
+    <p style="color:var(--soft);font-size:13.5px">All applications, renewals, corrections and DBT payments in one place, with Cherry beside the tables for conversational tracking.</p>
+    <a class="btn" href="/track/">Open Tracking Center</a>
   </div>
   <div class="card">
-    <h3 style="margin-top:0">🏢 Employer?</h3>
-    <p style="color:var(--soft);font-size:13.5px">Register your construction establishment and link your workforce.</p>
-    <a class="btn" href="/register-establishment/">Register establishment</a>
-  </div>
-  <div class="card">
-    <h3 style="margin-top:0">🏢 Employer?</h3>
-    <p style="color:var(--soft);font-size:13.5px">Builders, contractors and project units register establishments and contribute cess.</p>
-    <a class="btn" href="/register-establishment/">Register establishment</a>
-  </div>
-  <div class="card">
-    <h3 style="margin-top:0">🔍 Track application</h3>
-    <p style="color:var(--soft);font-size:13.5px">Enter your application number to see its current status and remarks.</p>
-    <a class="btn" href="/status/">Track status</a>
+    <h3 style="margin-top:0">📊 Dashboard</h3>
+    <p style="color:var(--soft);font-size:13.5px">Live analytics: registrations, applications, payment outcomes and data quality from the monitored records.</p>
+    <a class="btn" href="/dashboard/">View dashboard</a>
   </div>
 </div>
 
-<div class="card" style="margin-top:8px">
-  <h3 style="margin-top:0">🍒 Meet Cherry — the portal's AI assistant</h3>
-  <p style="color:var(--soft);font-size:14px;margin-bottom:0">
-    Click the red button at the bottom-right on any page. Cherry is connected to the portal's live database:
-    paste a registration number and it fetches the worker's record; paste an application number and it reports
-    the status; ask "what documents do I need for Total Permanent Disability?" and it lists them from the scheme
-    catalogue. It can also read out live portal statistics and point you to the right page.
+<div class="card" style="margin-top:8px;border-left:4px solid var(--amber)">
+  <h3 style="margin-top:0">What Cherry can do</h3>
+  <p style="color:var(--soft);font-size:14px;margin:0">
+    Task-oriented answers per scheme: <b>explain</b> · <b>eligibility</b> · <b>documents</b> ·
+    <b>procedure</b> · <b>benefit amount</b> · <b>status by number</b> (KPA / KPR / KPC / DBT /
+    registration) · <b>monitoring summaries</b> for officers. Registration and application
+    submission are handled by the department's own system — this app is for information and
+    monitoring only.
   </p>
 </div>
 {% endblock %}

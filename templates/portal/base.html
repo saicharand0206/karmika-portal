@@ -5,53 +5,75 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏗️</text></svg>">
-<title>{% block title %}Karmika Portal{% endblock %}</title>
+<title>{% block title %}Karmika Monitor{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#0B3B6F; --navy2:#0E4C8C; --amber:#F5A623; --bg:#F4F7FB;
-    --surface:#FFFFFF; --border:#DCE5F0; --text:#1C2B3A; --soft:#5A6E84; --faint:#8CA0B5;
+    --navy:#0B3B6F; --navy2:#0E4C8C; --navy3:#0A2E57; --amber:#F5A623; --amber2:#D6870C;
+    --bg:#EEF2F8; --paper:#F7F9FC;
+    --surface:#FFFFFF; --border:#DCE5F0; --text:#16233A; --soft:#54687F; --faint:#8CA0B5;
     --green:#2E8B57; --red:#C0392B; --blue:#2471A3;
+    --serif:'Fraunces', Georgia, serif; --sans:'Inter','Segoe UI',system-ui,sans-serif;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.55}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;
+    background-color:var(--bg);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(11,59,111,.05) 0px, rgba(11,59,111,.05) 1px, transparent 1px, transparent 72px),
+      repeating-linear-gradient(90deg, rgba(11,59,111,.05) 0px, rgba(11,59,111,.05) 1px, transparent 1px, transparent 72px);
+    background-attachment:fixed;
+  }
   a{color:var(--navy2)}
+  h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:-.01em}
 
   .demo-banner{background:#FFF4D6;border-bottom:1px solid #F0DFA8;color:#7A5D00;text-align:center;padding:6px 14px;font-size:12.5px}
-  header.site{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  .stripe{height:5px;background:repeating-linear-gradient(-45deg,var(--amber) 0 14px,var(--navy) 14px 28px);background-size:39.6px 5px}
+
+  header.site{
+    background:linear-gradient(160deg, var(--navy3) 0%, var(--navy) 62%, var(--navy2) 100%);
+    color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+    box-shadow:0 10px 30px -12px rgba(6,26,54,.55);
+  }
   .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff}
-  .brand .mark{width:44px;height:44px;border-radius:10px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:22px}
-  .brand b{font-size:19px;letter-spacing:-.01em}
-  .brand small{display:block;font-size:11.5px;opacity:.85;font-weight:400}
+  .brand .mark{width:44px;height:44px;border-radius:10px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .brand b{font-family:var(--serif);font-size:20px;letter-spacing:-.01em;font-weight:600}
+  .brand small{display:block;font-size:11.5px;opacity:.85;font-weight:400;font-family:var(--sans)}
   nav.main{display:flex;gap:4px;flex-wrap:wrap}
   nav.main a{color:#EAF1F9;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:600}
-  nav.main a:hover,nav.main a.active{background:rgba(255,255,255,.14)}
+  nav.main a:hover,nav.main a.active{background:rgba(255,255,255,.16)}
 
-  main{max-width:1050px;margin:0 auto;padding:26px 18px 60px}
-  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.02em}
+  main{max-width:1050px;margin:0 auto;padding:30px 18px 60px}
+  h1{font-size:28px;margin:0 0 6px}
   .sub{color:var(--soft);margin:0 0 22px;font-size:14.5px}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;transition:box-shadow .18s,transform .18s}
-  .card:hover{box-shadow:0 6px 22px rgba(11,59,111,.08)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;transition:box-shadow .18s,transform .18s;box-shadow:0 1px 2px rgba(16,35,60,.04)}
+  .card:hover{box-shadow:0 10px 28px -8px rgba(11,59,111,.16);transform:translateY(-1px)}
   .grid{display:grid;gap:14px}
   .grid.c2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
   .grid.c3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
   .grid.c4{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
 
-  .stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;transition:box-shadow .18s}
-  .stat:hover{box-shadow:0 6px 20px rgba(11,59,111,.08)}
-  .stat b{font-size:28px;color:var(--navy);display:block}
-  .stat span{font-size:12.5px;color:var(--soft);text-transform:uppercase;letter-spacing:.05em}
+  .stat{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--amber);border-radius:12px;padding:18px;text-align:center;transition:box-shadow .18s,transform .18s}
+  .stat:hover{box-shadow:0 10px 26px -8px rgba(11,59,111,.16);transform:translateY(-1px)}
+  .stat b{font-family:var(--serif);font-size:30px;color:var(--navy);display:block}
+  .stat span{font-size:12px;color:var(--soft);text-transform:uppercase;letter-spacing:.05em}
 
   label{display:block;font-size:13px;font-weight:700;color:var(--soft);margin:14px 0 5px}
   input[type=text],input[type=number],input[type=tel],select,textarea{
     width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;
-    font:14.5px 'Segoe UI',system-ui;background:#fff;color:var(--text)}
+    font:14.5px var(--sans);background:#fff;color:var(--text)}
   input:focus,select:focus,textarea:focus{outline:2px solid #0E4C8C33;border-color:var(--navy2)}
   .btn{display:inline-block;border:none;background:var(--navy2);color:#fff;border-radius:10px;
-    padding:11px 22px;font:700 14.5px 'Segoe UI',system-ui;cursor:pointer;text-decoration:none}
+    padding:11px 22px;font:700 14.5px var(--sans);cursor:pointer;text-decoration:none}
   .btn{transition:background .15s,transform .1s}
   .btn:hover{background:var(--navy)}
   .btn:active{transform:scale(.98)}
   .btn.amber{background:var(--amber);color:#3A2A00}
+  .btn.amber:hover{background:var(--amber2)}
   .checkline{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px}
 
   table{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -68,26 +90,24 @@
   .error{background:#FBE7E4;border:1px solid #F1C4BE;color:var(--red);padding:10px 14px;border-radius:10px;font-size:13.5px;margin-bottom:14px}
   .success{background:#E4F4EA;border:1px solid #BFE3CC;color:var(--green);padding:10px 14px;border-radius:10px;font-size:13.5px;margin-bottom:14px}
   footer.site{text-align:center;color:var(--faint);font-size:12px;padding:20px;border-top:1px solid var(--border)}
-  .card{transition:box-shadow .15s}
-  .card:hover{box-shadow:0 4px 16px rgba(11,59,111,.07)}
-  .btn{transition:transform .1s, background .15s}
-  .btn:active{transform:scale(.97)}
   @media print{
-    nav.main, .demo-banner, #cherryBtn, #cherryPanel, .no-print, footer.site{display:none !important}
+    nav.main, .demo-banner, #cherryBtn, #cherryPanel, .no-print, footer.site, .stripe{display:none !important}
     body{background:#fff}
     .card{border:1px solid #999;box-shadow:none}
   }
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} .card,.stat,.btn{transition:none} }
 
   /* ---------- Cherry widget ---------- */
   #cherryBtn{position:fixed;right:20px;bottom:20px;width:58px;height:58px;border-radius:50%;
     border:none;background:#C8102E;color:#fff;font-size:26px;cursor:pointer;z-index:90;
-    box-shadow:0 8px 24px rgba(200,16,46,.35)}
+    box-shadow:0 8px 24px rgba(200,16,46,.4)}
+  #cherryBtn:hover{box-shadow:0 10px 30px rgba(200,16,46,.5)}
   #cherryPanel{position:fixed;right:20px;bottom:90px;width:min(370px,92vw);height:min(520px,72vh);
     background:#fff;border:1px solid var(--border);border-radius:16px;z-index:95;display:none;
-    flex-direction:column;box-shadow:0 16px 48px rgba(11,59,111,.25);overflow:hidden}
+    flex-direction:column;box-shadow:0 20px 60px -8px rgba(11,59,111,.35);overflow:hidden}
   #cherryPanel.open{display:flex}
-  .cHead{background:#C8102E;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
-  .cHead b{font-size:15px}
+  .cHead{background:linear-gradient(120deg,#C8102E,#A30D26);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+  .cHead b{font-size:15px;font-family:var(--serif)}
   .cHead small{display:block;font-size:11px;opacity:.9;font-weight:400}
   .cHead button{border:none;background:rgba(255,255,255,.2);color:#fff;border-radius:7px;width:26px;height:26px;cursor:pointer}
   #cherryMsgs{flex:1;overflow-y:auto;padding:14px;background:#FDF9F7}
@@ -100,7 +120,7 @@
   .cInput{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:#fff}
   .cInput input{flex:1;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13.5px}
   .cInput button{border:none;background:#C8102E;color:#fff;border-radius:10px;padding:0 16px;font-weight:700;cursor:pointer}
-  .wchip{border:1px solid #F0C6CD;background:#fff;color:#C8102E;border-radius:999px;padding:5px 11px;font:600 11.5px 'Segoe UI',system-ui;cursor:pointer}
+  .wchip{border:1px solid #F0C6CD;background:#fff;color:#C8102E;border-radius:999px;padding:5px 11px;font:600 11.5px var(--sans);cursor:pointer}
   .wchip:hover{background:#FBE4E8}
 </style>
 </head>
@@ -109,26 +129,21 @@
 <header class="site">
   <a class="brand" href="/">
     <span class="mark">🏗️</span>
-    <span><b>Karmika Portal</b><small>Construction Workers Welfare — Demo</small></span>
+    <span><b>Karmika Monitor</b><small>Scheme Information & Monitoring — Demo</small></span>
   </a>
   <nav class="main">
     <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
-    <a href="/register/" class="{% if 'register' in request.path %}active{% endif %}">Register Worker</a>
-    <a href="/workers/" class="{% if 'worker' in request.path and 'establishment' not in request.path %}active{% endif %}">Workers</a>
-    <a href="/establishments/" class="{% if 'establishment' in request.path %}active{% endif %}">Establishments</a>
     <a href="/schemes/" class="{% if 'schemes' in request.path %}active{% endif %}">Schemes</a>
-    <a href="/apply/" class="{% if 'apply' in request.path %}active{% endif %}">Apply</a>
-    <a href="/renew/" class="{% if 'renew' in request.path %}active{% endif %}">Renew</a>
-    <a href="/change-request/" class="{% if 'change-request' in request.path %}active{% endif %}">Corrections</a>
-    <a href="/track/" class="{% if 'track' in request.path or 'status' in request.path %}active{% endif %}">Track Center</a>
+    <a href="/track/" class="{% if 'track' in request.path or 'status' in request.path or 'worker' in request.path %}active{% endif %}">Tracking Center</a>
     <a href="/dashboard/" class="{% if 'dashboard' in request.path %}active{% endif %}">Dashboard</a>
   </nav>
 </header>
+<div class="stripe"></div>
 
 <main>{% block content %}{% endblock %}</main>
 
 <footer class="site">
-  Karmika Portal — a student-built demo (Django + SQLite + Gemini AI). Inspired by public welfare-board
+  Karmika Monitor — a student-built demo (Django + SQLite + Gemini AI). Inspired by public welfare-board
   workflows; not an official website. Admin panel at <a href="/admin/">/admin/</a>.
 </footer>
 
@@ -142,7 +157,7 @@
   <div id="cherryMsgs">
     <div class="cb bot">Hi! I'm Cherry 🍒 — I can explain the welfare schemes, check any number (registration, KPA, KPR, KPC, EST, DBT), tell you what documents you need, or guide you around the portal. What do you need?</div>
     <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px">
-      <button class="wchip" onclick="cherryQuick('What schemes can I apply for?')">Schemes</button>
+      <button class="wchip" onclick="cherryQuick('What schemes are available and what do they give?')">Schemes</button>
       <button class="wchip" onclick="cherryQuick('Show all pending applications')">Pending</button>
       <button class="wchip" onclick="cherryQuick('Which registrations have expired?')">Renewals due</button>
     </div>

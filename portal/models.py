@@ -65,9 +65,16 @@ class Worker(models.Model):
 
 
 class Scheme(models.Model):
+    """Task-oriented scheme specification: everything Cherry needs to answer
+    the fixed tasks — what the scheme is, who is eligible, what documents,
+    what procedure, and what benefit amount."""
     code = models.IntegerField(unique=True)
     description = models.CharField(max_length=200)
     scheme_type = models.CharField(max_length=40, default="WELFARE")
+    eligibility = models.TextField(blank=True, help_text="Who can apply for this scheme")
+    procedure = models.TextField(blank=True, help_text="Steps to be followed for applying")
+    benefit_amount = models.CharField(max_length=120, blank=True,
+                                      help_text="Sanctioned amount (sample value for demo)")
 
     class Meta:
         ordering = ["code"]

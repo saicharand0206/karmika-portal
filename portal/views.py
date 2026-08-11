@@ -40,81 +40,14 @@ def add_years(d, years):
 # ---------------------------------------------------------------- pages
 def home(request):
     stats = {
-        "workers": Worker.objects.count(),
         "schemes": Scheme.objects.count(),
         "subschemes": SubScheme.objects.count(),
+        "workers": Worker.objects.count(),
         "applications": Application.objects.count(),
-        "approved": Application.objects.filter(status="APPROVED").count(),
-        "establishments": Establishment.objects.count(),
+        "pending": Application.objects.filter(status__in=["SUBMITTED", "UNDER_REVIEW"]).count(),
+        "failed_payments": DBTPayment.objects.filter(status="FAILED").count(),
     }
     return render(request, "portal/home.html", {"stats": stats})
-
-
-def register(request):
-    if request.method == "POST":
-        name = request.POST.get("worker_name", "").strip()
-        if not name:
-            return render(request, "portal/register.html",
-                          {"error": "Worker name is required.",
-                           "villages": Village.objects.select_related("mandal__district").all(),
-                           "establishments": Establishment.objects.all()})
-        year = date.today().year
-        serial = Worker.objects.filter(reg_year=year).count() + 1
-        reg_no = f"KP/{year}/{serial:05d}"
-        # Guard against collisions if rows were deleted
-        while Worker.objects.filter(reg_no=reg_no).exists():
-            serial += 1
-            reg_no = f"KP/{year}/{serial:05d}"
-
-        age = request.POST.get("age") or None
-        worker = Worker.objects.create(
-            reg_no=reg_no,
-            reg_year=year,
-            reg_date=date.today(),
-            worker_name=name.title(),
-            father_name=request.POST.get("father_name", "").strip().title(),
-            gender=request.POST.get("gender", "Unknown"),
-            age=int(age) if age else None,
-            ifsc_code=request.POST.get("ifsc_code", "").strip().upper(),
-            trade_code=request.POST.get("trade_code", "").strip(),
-            district_code=request.POST.get("district_code", "").strip(),
-            migrant_worker=request.POST.get("migrant_worker") == "on",
-            trade_union_member=request.POST.get("trade_union_member") == "on",
-        )
-        worker.ifsc_valid = bool(re.fullmatch(r"[A-Z]{4}0[A-Z0-9]{6}", worker.ifsc_code or ""))
-        worker.age_flag = bool(worker.age and (worker.age < 18 or worker.age > 60))
-        worker.valid_until = add_years(date.today(), 5)
-        village_id = request.POST.get("village")
-        if village_id:
-            worker.village = Village.objects.filter(pk=village_id).first()
-            if worker.village:
-                worker.district_code = worker.village.mandal.district.code
-        worker.save()
-        est_id = request.POST.get("establishment")
-        if est_id:
-            worker.employer = Establishment.objects.filter(pk=est_id).first()
-            worker.save(update_fields=["employer"])
-        nominee_name = request.POST.get("nominee_name", "").strip()
-        if nominee_name:
-            Nominee.objects.create(worker=worker, name=nominee_name.title(),
-                                   relationship=request.POST.get("nominee_relationship", "Nominee").strip() or "Nominee",
-                                   is_primary=True)
-        return render(request, "portal/register_success.html", {"worker": worker})
-    return render(request, "portal/register.html",
-                  {"villages": Village.objects.select_related("mandal__district").all(),
-                   "establishments": Establishment.objects.all()})
-
-
-def workers_list(request):
-    q = request.GET.get("q", "").strip()
-    expired = request.GET.get("expired") == "1"
-    qs = Worker.objects.select_related("employer", "village").all()
-    if q:
-        qs = qs.filter(worker_name__icontains=q) | qs.filter(reg_no__icontains=q)
-    if expired:
-        qs = qs.filter(valid_until__lt=date.today())
-    return render(request, "portal/workers.html",
-                  {"workers": qs[:100], "q": q, "total": qs.count(), "expired": expired})
 
 
 def worker_detail(request, reg_no):
@@ -131,40 +64,6 @@ def schemes(request):
                   {"schemes": Scheme.objects.prefetch_related("subschemes").all()})
 
 
-def apply(request):
-    subschemes = SubScheme.objects.select_related("scheme").all()
-    if request.method == "POST":
-        reg_no = request.POST.get("reg_no", "").strip()
-        sub_id = request.POST.get("subscheme")
-        try:
-            worker = Worker.objects.get(reg_no__iexact=reg_no)
-        except Worker.DoesNotExist:
-            return render(request, "portal/apply.html",
-                          {"subschemes": subschemes, "error": f"No worker registered with number '{reg_no}'. Register first."})
-        try:
-            sub = SubScheme.objects.get(pk=sub_id)
-        except (SubScheme.DoesNotExist, ValueError):
-            return render(request, "portal/apply.html",
-                          {"subschemes": subschemes, "error": "Please choose a valid scheme."})
-
-        serial = Application.objects.count() + 1
-        app_no = f"KPA-{date.today().year}-{serial:05d}"
-        while Application.objects.filter(app_no=app_no).exists():
-            serial += 1
-            app_no = f"KPA-{date.today().year}-{serial:05d}"
-
-        application = Application.objects.create(
-            app_no=app_no,
-            worker=worker,
-            subscheme=sub,
-            applicant_name=request.POST.get("applicant_name", worker.worker_name).strip().title(),
-            relationship=request.POST.get("relationship", "").strip(),
-            phone=request.POST.get("phone", "").strip(),
-            bank_account=request.POST.get("bank_account", "").strip(),
-            details=request.POST.get("details", "").strip(),
-        )
-        return render(request, "portal/apply_success.html", {"a": application})
-    return render(request, "portal/apply.html", {"subschemes": subschemes})
 
 
 def status(request):
@@ -235,32 +134,78 @@ def dashboard(request):
 
 
 # ---------------------------------------------------------------- Cherry
-BASE_PROMPT = """You are Cherry, the AI assistant of the Karmika Portal — an ACADEMIC DEMO
-web application (not a real government website) for construction worker welfare,
-built by a student. You help visitors use the portal.
+BASE_PROMPT = """You are Cherry, the AI assistant of the Karmika Monitor — an ACADEMIC DEMO
+web application (not a real government website) built by a student for a department-style
+use case: scheme information and monitoring for construction worker welfare.
 
-You can help with:\n- Establishments/employers register at /register-establishment/ and are listed at /establishments/ (they pay cess that funds the schemes)
-- Explaining the welfare schemes and their required documents (from the catalogue below)
-- Looking up worker registrations and application statuses (lookup results are injected below when found)
-- Guiding users: Register at /register/, browse or search workers at /workers/, view schemes at /schemes/,
-  apply for a benefit at /apply/, check application status at /status/, renew a 5-year registration at /renew/,
-  request name/nominee/bank corrections at /change-request/, track EVERYTHING at /track/ (the Tracking Center),
-  see analytics at /dashboard/
-- Explaining DBT (Direct Benefit Transfer) payments, batches, and failed-transaction retries
-- Registrations are valid for 5 YEARS and must be renewed; expired workers should file a renewal at /renew/
-- Employers register establishments at /register-establishment/ and browse them at /establishments/
-- Workers can download a printable registration card from their worker page
-- Answering general questions about the portal's live statistics (below)
+You are TASK-ORIENTED. For every scheme you handle a fixed set of tasks:
+1. EXPLAIN the scheme in simple words.
+2. ELIGIBILITY — who can apply (from the specification below).
+3. DOCUMENTS — list the required documents for the scheme/sub-scheme.
+4. PROCEDURE — the steps to be followed for applying.
+5. BENEFIT AMOUNT — the sanctioned amount (sample values in this demo).
+6. STATUS — when the user gives a number, report that record precisely.
+7. MONITORING — summaries for officers: pending items, completed items, failed DBT
+   payments (with reasons), expired registrations, scheme-wise counts.
 
-Rules: be warm and concise. Use short paragraphs. If a lookup result is provided below, answer from it
-precisely. If the user asks for a registration or application number you don't see data for, ask them
-to share the exact number. Remind users this is a demo when they ask about real government benefits,
-and suggest the official board for real claims. Never invent worker data."""
+Identify which task the question is asking for and answer ONLY that task, short and clear.
+Answer in simple words, since workers also use this. Use short points for documents and
+numbered steps for procedures. The pages available are: /schemes/ (scheme information),
+/track/ (Tracking Center with all records), /dashboard/ (analytics). There is no
+registration or application form in this app — those are handled by the department's own
+system; politely say so if asked to register or apply here.
+
+Rules: answer only from the data injected below; never invent records or amounts. If a
+number or scheme is not found in the data, say so and ask for the correct one. Remind
+users this is a demo with sample data when they ask about real benefits."""
+
+
+DEPT_API_URL = os.environ.get("DEPT_API_URL", "").rstrip("/")
+DEPT_API_KEY = os.environ.get("DEPT_API_KEY", "")
+
+
+def fetch_department_record(kind, number):
+    """Optional LIVE lookup against the department's own record API.
+
+    IMPORTANT — this deliberately calls an HTTPS API, not the department's Postgres
+    database directly. Cherry runs on a public host (Render) and the department DB
+    lives on a private network address, so a direct database connection from here is
+    neither reachable nor appropriate. The correct integration is a small internal
+    API service (built with Django, running somewhere WITH access to that database)
+    that exposes read-only endpoints like the one this function expects below.
+    See dept_api_example/ in this project for a starting point for that service.
+
+    This function is a safe no-op until DEPT_API_URL is configured as an environment
+    variable (in Render's dashboard, or a local .env file — never hardcoded here or
+    committed to the repo). Until then, Cherry simply uses the local demo database.
+
+    Expected department endpoint shape (adjust to match the real API once it exists):
+        GET {DEPT_API_URL}/api/{kind}/{number}
+        Header: Authorization: Bearer <DEPT_API_KEY>
+        Returns JSON with the record's fields.
+    """
+    if not DEPT_API_URL:
+        return None
+    try:
+        r = requests.get(
+            f"{DEPT_API_URL}/api/{kind}/{number}",
+            headers={"Authorization": f"Bearer {DEPT_API_KEY}"} if DEPT_API_KEY else {},
+            timeout=8,
+        )
+        if r.status_code == 200:
+            return r.json()
+    except requests.RequestException:
+        pass
+    return None
 
 
 def build_context(message):
     """Gather live DB context so Cherry can answer about this portal's actual data."""
     parts = []
+
+    # Optional: check the department's own live system first (see fetch_department_record
+    # below for how this gets wired up once that API exists). Falls back to local data.
+    dept_hit = None
 
     # Live stats
     parts.append(
@@ -290,6 +235,10 @@ def build_context(message):
 
     # Detect registration numbers in the message (e.g. KP/2026/00001 or ALOTEST/2019/00008)
     for reg in set(re.findall(r"[A-Za-z]{2,10}/\d{4}/\d{3,6}", message)):
+        dept_hit = fetch_department_record("worker", reg)
+        if dept_hit:
+            parts.append(f"WORKER LOOKUP {reg} (LIVE from department system): {json.dumps(dept_hit)}")
+            continue  # trust the live department record over the local demo copy
         try:
             w = Worker.objects.get(reg_no__iexact=reg)
             apps = "; ".join(f"{a.app_no}: {a.subscheme.description} [{a.status}]"
@@ -390,12 +339,27 @@ def build_context(message):
                          for c in ChangeRequest.objects.select_related("worker")[:10]) or "none"
         parts.append(f"RENEWAL REQUESTS: {rens}. CHANGE REQUESTS: {chgs}")
 
-    # If the user asks about required documents for a scheme, inject them
+    # Task specification injection: when a scheme is mentioned, provide its full spec
     msg_lower = message.lower()
+    mentioned = set()
+    for sch in Scheme.objects.all():
+        words = [w for w in sch.description.lower().split() if len(w) > 4]
+        if any(w in msg_lower for w in words):
+            mentioned.add(sch.pk)
+    for sch in Scheme.objects.filter(pk__in=list(mentioned)[:3]):
+        docs = []
+        for ss in sch.subschemes.all():
+            docs.append(f"[{ss.description}] " + "; ".join(ss.required_list()[:25]))
+        parts.append(
+            f"SCHEME SPECIFICATION — {sch.description}:\n"
+            f"Eligibility: {sch.eligibility}\n"
+            f"Procedure: {sch.procedure}\n"
+            f"Benefit amount: {sch.benefit_amount}\n"
+            f"Documents by sub-scheme: " + " | ".join(docs)
+        )
+    # Sub-scheme direct mention (documents)
     for ss in SubScheme.objects.select_related("scheme"):
-        if ss.description.lower() in msg_lower or (
-            ss.scheme.description.lower() in msg_lower and ("document" in msg_lower or "required" in msg_lower or "need" in msg_lower)
-        ):
+        if ss.description.lower() in msg_lower and ss.scheme_id not in mentioned:
             parts.append(f"REQUIRED FOR '{ss.scheme.description} / {ss.description}': "
                          + "; ".join(ss.required_list()[:40]))
 
@@ -449,64 +413,6 @@ def chat_api(request):
         return JsonResponse({"error": "Server error. Try again."}, status=500)
 
 
-# ---------------------------------------------------------------- phase 2 pages
-def renew(request):
-    """5-year registration renewal request."""
-    error = success = None
-    if request.method == "POST":
-        reg_no = request.POST.get("reg_no", "").strip()
-        try:
-            worker = Worker.objects.get(reg_no__iexact=reg_no)
-        except Worker.DoesNotExist:
-            error = f"No worker registered with number '{reg_no}'."
-        else:
-            if worker.renewals.filter(status="SUBMITTED").exists():
-                error = f"{worker.reg_no} already has a renewal pending review."
-            else:
-                pf = worker.valid_until or date.today()
-                serial = Renewal.objects.count() + 1
-                req_no = f"KPR-{date.today().year}-{serial:05d}"
-                while Renewal.objects.filter(req_no=req_no).exists():
-                    serial += 1
-                    req_no = f"KPR-{date.today().year}-{serial:05d}"
-                r = Renewal.objects.create(req_no=req_no, worker=worker,
-                                           period_from=pf, period_to=add_years(pf, 5))
-                success = r
-    return render(request, "portal/renew.html", {"error": error, "success": success})
-
-
-def change_request(request):
-    """Name / nominee / bank-detail correction requests."""
-    error = success = None
-    if request.method == "POST":
-        reg_no = request.POST.get("reg_no", "").strip()
-        req_type = request.POST.get("request_type", "NAME_CHANGE")
-        new_value = request.POST.get("new_value", "").strip()
-        try:
-            worker = Worker.objects.get(reg_no__iexact=reg_no)
-        except Worker.DoesNotExist:
-            error = f"No worker registered with number '{reg_no}'."
-        else:
-            if not new_value:
-                error = "Please enter the corrected value."
-            else:
-                old = ""
-                if req_type == "NAME_CHANGE":
-                    old = worker.worker_name
-                elif req_type == "BANK_CHANGE":
-                    old = worker.ifsc_code
-                elif req_type == "NOMINEE_CHANGE":
-                    nom = worker.nominees.filter(is_primary=True).first()
-                    old = nom.name if nom else ""
-                serial = ChangeRequest.objects.count() + 1
-                req_no = f"KPC-{date.today().year}-{serial:05d}"
-                while ChangeRequest.objects.filter(req_no=req_no).exists():
-                    serial += 1
-                    req_no = f"KPC-{date.today().year}-{serial:05d}"
-                success = ChangeRequest.objects.create(
-                    req_no=req_no, worker=worker, request_type=req_type,
-                    old_value=old, new_value=new_value)
-    return render(request, "portal/change_request.html", {"error": error, "success": success})
 
 
 def track(request):
@@ -532,80 +438,5 @@ def track(request):
                    "changes": changes, "payments": payments, "chips": chips})
 
 
-def establishment_detail(request, est_no):
-    try:
-        est = Establishment.objects.select_related("village__mandal__district").get(est_no__iexact=est_no)
-    except Establishment.DoesNotExist:
-        return render(request, "portal/establishments.html",
-                      {"establishments": [], "q": est_no, "total": 0,
-                       "error": f"No establishment found with number {est_no}."})
-    return render(request, "portal/establishment_detail.html",
-                  {"e": est, "workers": est.workers.all()[:100]})
 
 
-# ---------------------------------------------------------------- polish features
-def worker_card(request, reg_no):
-    """Printable registration card for a worker."""
-    try:
-        worker = Worker.objects.select_related("village__mandal__district", "alo_circle").get(reg_no=reg_no)
-    except Worker.DoesNotExist:
-        return redirect("workers")
-    nominee = worker.nominees.filter(is_primary=True).first()
-    return render(request, "portal/worker_card.html", {"w": worker, "nominee": nominee})
-
-
-def workers_export(request):
-    """Download the worker register as CSV."""
-    import csv as _csv
-    from django.http import HttpResponse
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="karmika_workers.csv"'
-    writer = _csv.writer(response)
-    writer.writerow(["reg_no", "worker_name", "father_name", "gender", "age", "reg_year",
-                     "valid_until", "village", "alo_circle", "employer",
-                     "migrant_worker", "ifsc_code", "ifsc_valid"])
-    for w in Worker.objects.select_related("village", "alo_circle", "employer").all():
-        writer.writerow([w.reg_no, w.worker_name, w.father_name, w.gender, w.age, w.reg_year,
-                         w.valid_until, w.village or "", w.alo_circle or "", w.employer or "",
-                         w.migrant_worker, w.ifsc_code, w.ifsc_valid])
-    return response
-
-
-# ---------------------------------------------------------------- establishments
-def establishments_list(request):
-    q = request.GET.get("q", "").strip()
-    qs = Establishment.objects.select_related("village__mandal__district").all()
-    if q:
-        qs = qs.filter(name__icontains=q) | qs.filter(est_no__icontains=q) | qs.filter(employer_name__icontains=q)
-    return render(request, "portal/establishments.html",
-                  {"establishments": qs[:100], "q": q, "total": qs.count()})
-
-
-def register_establishment(request):
-    villages = Village.objects.select_related("mandal__district").all()
-    if request.method == "POST":
-        name = request.POST.get("name", "").strip()
-        employer_name = request.POST.get("employer_name", "").strip()
-        if not name or not employer_name:
-            return render(request, "portal/register_establishment.html",
-                          {"villages": villages, "error": "Establishment name and employer name are required."})
-        serial = Establishment.objects.count() + 1
-        est_no = f"EST-{date.today().year}-{serial:05d}"
-        while Establishment.objects.filter(est_no=est_no).exists():
-            serial += 1
-            est_no = f"EST-{date.today().year}-{serial:05d}"
-        workers_count = request.POST.get("est_workers_count") or 0
-        cess = request.POST.get("cess_paid") or 0
-        est = Establishment.objects.create(
-            est_no=est_no, name=name.title(), employer_name=employer_name.title(),
-            category=request.POST.get("category", "CONTRACTOR"),
-            phone=request.POST.get("phone", "").strip(),
-            address=request.POST.get("address", "").strip(),
-            village=Village.objects.filter(pk=request.POST.get("village")).first(),
-            est_workers_count=int(workers_count),
-            cess_paid=float(cess),
-            valid_until=add_years(date.today(), 5),
-        )
-        return render(request, "portal/register_establishment.html",
-                      {"villages": villages, "success": est})
-    return render(request, "portal/register_establishment.html", {"villages": villages})
